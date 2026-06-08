@@ -7,4 +7,7 @@ data/
 *.db-wal
 *.db-shm
 .env
+.env.prod
 models/
+node_modules/
+dist/

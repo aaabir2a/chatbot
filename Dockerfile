@@ -1,3 +1,12 @@
+# ── Stage 1: build the embeddable widget (widget.js) ──────────────────────────
+FROM node:20-slim AS widget
+WORKDIR /widget
+COPY widget/package.json widget/package-lock.json* ./
+RUN npm install
+COPY widget/ ./
+RUN npm run build   # produces /widget/dist/widget.js
+
+# ── Stage 2: Python API ───────────────────────────────────────────────────────
 FROM python:3.11-slim
 
 ENV PYTHONUNBUFFERED=1 \
@@ -23,6 +32,9 @@ SentenceTransformer('all-MiniLM-L6-v2')"
 COPY app ./app
 COPY alembic ./alembic
 COPY alembic.ini ./alembic.ini
+
+# Bring the built widget so GET /widget.js (served from widget/dist) works.
+COPY --from=widget /widget/dist ./widget/dist
 
 EXPOSE 8000
 

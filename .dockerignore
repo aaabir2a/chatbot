@@ -7,7 +7,17 @@ data/
 *.db-wal
 *.db-shm
 .env
+.env.prod
 .git/
 .gitignore
 README.md
+GUIDE.md
+DEPLOY.md
 test_e2e.py
+test_handoff.py
+# node artifacts (rebuilt inside images)
+frontend/node_modules
+frontend/dist
+widget/node_modules
+widget/dist
+**/.demo-fixture.json

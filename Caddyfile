@@ -1,0 +1,17 @@
+# Caddy auto-provisions Let's Encrypt TLS for both domains.
+# Domains + email come from environment (set in .env.prod).
+# WebSockets (/ws/*) pass through reverse_proxy transparently.
+
+{
+    email {$ACME_EMAIL}
+}
+
+# API + widget.js  ->  backend
+{$API_DOMAIN} {
+    reverse_proxy api:8000
+}
+
+# Dashboard (static SPA)  ->  frontend (nginx)
+{$APP_DOMAIN} {
+    reverse_proxy web:80
+}
