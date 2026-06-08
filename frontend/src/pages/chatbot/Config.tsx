@@ -1,0 +1,71 @@
+import { useState } from "react";
+import { api } from "../../api/client";
+import { ApiError, type ChatbotInput } from "../../api/types";
+import { useToast } from "../../components/Toast";
+import { Button, Card, Field, Input, Textarea } from "../../components/ui";
+import { useBot } from "./ChatbotLayout";
+
+export default function ConfigPage() {
+  const { bot, reload } = useBot();
+  const toast = useToast();
+  const [form, setForm] = useState<ChatbotInput>({
+    name: bot.name,
+    system_prompt: bot.system_prompt,
+    tone: bot.tone,
+    welcome_message: bot.welcome_message,
+    model: bot.model,
+  });
+  const [saving, setSaving] = useState(false);
+
+  const set = (k: keyof ChatbotInput, v: string) => setForm({ ...form, [k]: v });
+
+  const save = async () => {
+    setSaving(true);
+    try {
+      await api.updateChatbot(bot.id, form);
+      toast.success("Configuration saved");
+      reload();
+    } catch (e) {
+      toast.error(e instanceof ApiError ? e.message : "Save failed");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Card
+      title="Configuration"
+      actions={
+        <Button onClick={save} loading={saving}>
+          Save changes
+        </Button>
+      }
+    >
+      <Field label="Name">
+        <Input value={form.name} onChange={(e) => set("name", e.target.value)} />
+      </Field>
+      <Field label="System prompt" hint="Defines the assistant's role and rules.">
+        <Textarea
+          rows={4}
+          value={form.system_prompt}
+          onChange={(e) => set("system_prompt", e.target.value)}
+        />
+      </Field>
+      <div className="row">
+        <Field label="Tone">
+          <Input value={form.tone} onChange={(e) => set("tone", e.target.value)} />
+        </Field>
+        <Field label="Model" hint="Must be pulled in Ollama.">
+          <Input value={form.model} onChange={(e) => set("model", e.target.value)} />
+        </Field>
+      </div>
+      <Field label="Welcome message">
+        <Textarea
+          rows={2}
+          value={form.welcome_message}
+          onChange={(e) => set("welcome_message", e.target.value)}
+        />
+      </Field>
+    </Card>
+  );
+}

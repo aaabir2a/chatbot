@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RAG Chat Widget — script embed demo</title>
+    <style>
+      body { font-family: system-ui, sans-serif; margin: 0; padding: 60px; color: #1a1d29; }
+      h1 { font-size: 28px; }
+      .note { background: #f4f5f9; border: 1px solid #e6e8ef; padding: 16px; border-radius: 10px; max-width: 640px; }
+      code { background: #ececff; padding: 2px 6px; border-radius: 4px; }
+    </style>
+  </head>
+  <body>
+    <h1>Plain-HTML site</h1>
+    <div class="note">
+      This page has no framework. The chat widget below is injected by a single
+      <code>&lt;script&gt;</code> tag. Click the bubble in the corner.
+    </div>
+
+    <!--
+      Drop-in embed. Replace the data-* values with your deployment.
+      In this repo the file is built to ../dist/widget.js.
+    -->
+    <script
+      src="../dist/widget.js"
+      data-api-url="http://localhost:8000"
+      data-api-key="REPLACE_WITH_YOUR_API_KEY"
+      data-chatbot-id="REPLACE_WITH_CHATBOT_ID"
+      data-title="Support"
+      data-subtitle="We reply with your docs"
+      data-primary-color="#5b5bf5"
+      data-position="bottom-right"
+      data-welcome-message="Hi! Ask me anything about our product."
+    ></script>
+  </body>
+</html>

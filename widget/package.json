@@ -1,0 +1,41 @@
+{
+  "name": "@rag/chat-widget",
+  "version": "0.1.0",
+  "description": "Embeddable RAG chat widget — React component + drop-in script.",
+  "type": "module",
+  "main": "./dist/rag-chat-widget.cjs",
+  "module": "./dist/rag-chat-widget.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/rag-chat-widget.js",
+      "require": "./dist/rag-chat-widget.cjs"
+    },
+    "./widget.js": "./dist/widget.js"
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build:lib": "vite build",
+    "build:embed": "vite build --config vite.embed.config.ts",
+    "build": "npm run build:lib && npm run build:embed",
+    "dev:demo": "vite build --config vite.embed.config.ts --watch"
+  },
+  "peerDependencies": {
+    "react": ">=17",
+    "react-dom": ">=17"
+  },
+  "peerDependenciesMeta": {
+    "react": { "optional": true },
+    "react-dom": { "optional": true }
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "@vitejs/plugin-react": "^4.3.4",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.11",
+    "vite-plugin-dts": "^4.3.0"
+  }
+}
