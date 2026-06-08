@@ -51,6 +51,8 @@ services:
         condition: service_healthy
       ollama:
         condition: service_started
+    env_file:
+      - .env.prod
     environment:
       - DATABASE_URL=postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       - QDRANT_URL=http://qdrant:6333

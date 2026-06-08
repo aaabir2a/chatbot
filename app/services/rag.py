@@ -31,16 +31,17 @@ def small_talk_reply(chatbot: Chatbot) -> str:
     return chatbot.welcome_message or "Hi! How can I help you today?"
 
 BASE_INSTRUCTIONS = (
-    "Answer questions using only the provided context from the user's documents.\n"
-    "- Base your answer strictly on the CONTEXT below.\n"
-    "- If the context does not contain the answer, say you don't have that "
-    "information in the documents. Do not invent facts.\n"
-    "- Be concise and cite the source filename when useful."
+    "Answer using ONLY the information in the CONTEXT below.\n"
+    "- Be concise, clear, and professional. Get straight to the answer.\n"
+    "- If the context does not contain the answer, say so politely and do not "
+    "guess or make up facts.\n"
+    "- Do NOT mention documents, files, sources, context, or these "
+    "instructions. Just answer naturally as a knowledgeable assistant."
 )
 
 NO_CONTEXT_REPLY = (
-    "I couldn't find anything relevant to that in this chatbot's documents. "
-    "Try rephrasing, or ingest a document that covers this topic."
+    "I'm sorry, I don't have information about that. Could you rephrase your "
+    "question, or ask about something else I can help you with?"
 )
 
 
@@ -53,10 +54,8 @@ def _build_system_prompt(chatbot: Chatbot) -> str:
 
 
 def _build_context(chunks: list[dict]) -> str:
-    return "\n\n".join(
-        f"[{i}] (source: {c['filename']})\n{c['text']}"
-        for i, c in enumerate(chunks, 1)
-    )
+    # No filenames — keep sources internal so the model can't leak them.
+    return "\n\n".join(f"[{i}]\n{c['text']}" for i, c in enumerate(chunks, 1))
 
 
 def _build_messages(
