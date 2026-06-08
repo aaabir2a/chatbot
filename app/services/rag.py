@@ -1,5 +1,6 @@
 """RAG orchestration: retrieve (scoped to chatbot), build prompt, stream, log."""
 import logging
+import re
 from typing import AsyncIterator
 
 from sqlalchemy.orm import Session
@@ -10,6 +11,24 @@ from app.services import crud, embeddings, vectorstore
 from app.services.llm import get_provider
 
 logger = logging.getLogger(__name__)
+
+# Greetings / small talk: reply conversationally instead of the doc fallback.
+_GREETING_RE = re.compile(
+    r"^\s*(hi|hello|hey|hiya|yo|howdy|sup|hola|greetings|"
+    r"good\s+(morning|afternoon|evening|day)|"
+    r"thanks?|thank\s+you|ty|bye|goodbye|see\s+ya|ok(ay)?)"
+    r"[\s!.,?]*$",
+    re.IGNORECASE,
+)
+
+
+def is_small_talk(message: str) -> bool:
+    return bool(_GREETING_RE.match(message or "")) and len(message) <= 40
+
+
+def small_talk_reply(chatbot: Chatbot) -> str:
+    """Friendly canned reply for greetings (no LLM, no retrieval — instant)."""
+    return chatbot.welcome_message or "Hi! How can I help you today?"
 
 BASE_INSTRUCTIONS = (
     "Answer questions using only the provided context from the user's documents.\n"
@@ -64,6 +83,17 @@ async def stream_answer(
     """Yield answer tokens for an SSE stream and log the turn. Tenant-scoped."""
     chatbot_id = chatbot.id
 
+    # 0. Greetings / small talk: reply instantly, skip retrieval + LLM.
+    if is_small_talk(message):
+        reply = small_talk_reply(chatbot)
+        turn = crud.next_turn_number(db, chatbot_id, session_id)
+        crud.log_turn(
+            db, chatbot_id, session_id, message, reply, turn,
+            {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0},
+        )
+        yield reply
+        return
+
     # 1. Embed query, retrieve top-k chunks FILTERED to this chatbot only.
     query_vector = embeddings.embed_query(message)
     chunks = vectorstore.search(chatbot_id, query_vector, top_k=settings.top_k)
@@ -117,6 +147,12 @@ async def stream_rag(
     caller) and yields answer tokens. Fills ``usage_out`` with token counts.
     Persistence/logging is the caller's responsibility.
     """
+    # Greetings / small talk: reply instantly, skip retrieval + LLM.
+    if is_small_talk(message):
+        usage_out.update(prompt_tokens=0, completion_tokens=0, total_tokens=0)
+        yield small_talk_reply(chatbot)
+        return
+
     query_vector = embeddings.embed_query(message)
     chunks = vectorstore.search(chatbot.id, query_vector, top_k=settings.top_k)
     relevant = [c for c in chunks if c["score"] >= settings.score_threshold]
