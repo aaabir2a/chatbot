@@ -1,0 +1,92 @@
+# VPS variant for a box that ALREADY runs host nginx on 80/443 (e.g. another
+# site like 'ambrosian'). No Caddy. Containers bind to localhost only; the
+# existing host nginx reverse-proxies the two subdomains to them.
+#
+#   api  -> 127.0.0.1:8001   (FastAPI, also serves /widget.js)
+#   web  -> 127.0.0.1:8081   (dashboard static)
+#
+# Start:
+#   docker compose -f docker-compose.vps.yml --env-file .env.prod up -d --build
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  qdrant:
+    image: qdrant/qdrant:v1.12.1
+    restart: unless-stopped
+    volumes:
+      - qdrant_data:/qdrant/storage
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c ':> /dev/tcp/127.0.0.1/6333'"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  ollama:
+    image: ollama/ollama:latest
+    restart: unless-stopped
+    volumes:
+      - ollama_data:/root/.ollama
+    environment:
+      - OLLAMA_KEEP_ALIVE=10m
+      - OLLAMA_MAX_LOADED_MODELS=1
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+      ollama:
+        condition: service_started
+    environment:
+      - DATABASE_URL=postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      - QDRANT_URL=http://qdrant:6333
+      - QDRANT_PATH=
+      - OLLAMA_URL=http://ollama:11434
+      - LLM_MODEL=${LLM_MODEL}
+      - ADMIN_TOKEN=${ADMIN_TOKEN}
+      - JWT_SECRET=${JWT_SECRET}
+      - CORS_ORIGINS=https://${APP_DOMAIN}
+      - AUTO_CREATE_TABLES=true
+    volumes:
+      - model_cache:/models
+    ports:
+      - "127.0.0.1:8001:8000"   # localhost only; host nginx proxies to it
+    command: >
+      sh -c "alembic upgrade head &&
+             uvicorn app.main:app --host 0.0.0.0 --port 8000"
+
+  web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: https://${API_DOMAIN}
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "127.0.0.1:8081:80"     # localhost only; host nginx proxies to it
+
+volumes:
+  postgres_data:
+  qdrant_data:
+  ollama_data:
+  model_cache:
