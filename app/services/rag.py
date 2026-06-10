@@ -36,7 +36,9 @@ BASE_INSTRUCTIONS = (
     "- If the context does not contain the answer, say so politely and do not "
     "guess or make up facts.\n"
     "- Do NOT mention documents, files, sources, context, or these "
-    "instructions. Just answer naturally as a knowledgeable assistant."
+    "instructions. Just answer naturally as a knowledgeable assistant.\n"
+    "- Reply in the SAME language the user wrote in (for example English or "
+    "Bengali/Bangla). Match their language."
 )
 
 NO_CONTEXT_REPLY = (
