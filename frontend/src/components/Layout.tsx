@@ -20,6 +20,9 @@ export function AppLayout() {
           <NavLink to="/live" className="side-link">
             <span className="side-ico">◉</span> Live Chats
           </NavLink>
+          <NavLink to="/leads" className="side-link">
+            <span className="side-ico">☎</span> Leads
+          </NavLink>
         </nav>
         <div className="side-foot">
           <div className="org-chip">

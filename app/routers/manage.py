@@ -19,7 +19,7 @@ from sqlalchemy.orm import Session
 from sse_starlette.sse import EventSourceResponse
 
 from app.db.base import get_db
-from app.db.models import ApiKey, ChatLog, Chatbot, Document, Organization
+from app.db.models import ApiKey, ChatLog, Chatbot, Document, Lead, Organization
 from app.schemas import (
     ApiKeyCreate,
     ApiKeyCreated,
@@ -31,6 +31,8 @@ from app.schemas import (
     DocumentInfo,
     DocumentList,
     IngestResponse,
+    LeadInfo,
+    LeadStatusUpdate,
     RecentConversation,
     UsageResponse,
 )
@@ -275,6 +277,40 @@ def usage(
             for r in recent_rows
         ],
     )
+
+
+# ── Leads ───────────────────────────────────────────────────────────────────
+@router.get("/leads", response_model=list[LeadInfo])
+def list_leads(
+    chatbot_id: str | None = None,
+    org: Organization = Depends(require_org),
+    db: Session = Depends(get_db),
+) -> list[Lead]:
+    q = (
+        db.query(Lead)
+        .join(Chatbot, Lead.chatbot_id == Chatbot.id)
+        .filter(Chatbot.org_id == org.id)
+    )
+    if chatbot_id:
+        q = q.filter(Lead.chatbot_id == chatbot_id)
+    return q.order_by(Lead.created_at.desc()).all()
+
+
+@router.patch("/leads/{lead_id}", response_model=LeadInfo)
+def update_lead(
+    lead_id: str,
+    body: LeadStatusUpdate,
+    org: Organization = Depends(require_org),
+    db: Session = Depends(get_db),
+) -> Lead:
+    lead = db.get(Lead, lead_id)
+    if lead is None:
+        raise HTTPException(status_code=404, detail="Lead not found.")
+    owned_chatbot(db, org, lead.chatbot_id)  # tenant check
+    lead.status = body.status
+    db.commit()
+    db.refresh(lead)
+    return lead
 
 
 # ── Test chat (dashboard, JWT-scoped, streamed) ─────────────────────────────

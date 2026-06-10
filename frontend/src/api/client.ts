@@ -6,6 +6,7 @@ import {
   type ChatbotInput,
   type Conversation,
   type ConvMessage,
+  type Lead,
   type DocumentList,
   type DocumentInfo,
   type Org,
@@ -125,6 +126,14 @@ export const api = {
 
   // ── Usage ──
   usage: (chatbotId: string) => request<Usage>(`/chatbots/${chatbotId}/usage`),
+
+  // ── Leads ──
+  listLeads: (chatbotId?: string) =>
+    request<Lead[]>(
+      chatbotId ? `/leads?chatbot_id=${chatbotId}` : "/leads",
+    ),
+  updateLead: (leadId: string, status: "new" | "contacted") =>
+    request<Lead>(`/leads/${leadId}`, { method: "PATCH", body: { status } }),
 
   // ── Live chats ──
   listConversations: () =>

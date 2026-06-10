@@ -6,6 +6,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Chatbots from "./pages/Chatbots";
 import LiveChats from "./pages/LiveChats";
+import Leads from "./pages/Leads";
 import ChatbotLayout from "./pages/chatbot/ChatbotLayout";
 import ConfigPage from "./pages/chatbot/Config";
 import DocumentsPage from "./pages/chatbot/Documents";
@@ -42,6 +43,7 @@ export default function App() {
       >
         <Route path="/" element={<Chatbots />} />
         <Route path="/live" element={<LiveChats />} />
+        <Route path="/leads" element={<Leads />} />
         <Route path="/chatbots/:id" element={<ChatbotLayout />}>
           <Route index element={<Navigate to="config" replace />} />
           <Route path="config" element={<ConfigPage />} />

@@ -69,9 +69,13 @@ export default function LiveChats() {
           case "inbox":
             agentIdRef.current = data.agent_id;
             break;
+          case "lead":
           case "conversation_updated":
           case "message":
           case "mode": {
+            if (data.type === "lead" && data.lead) {
+              toast.success(`New lead: ${data.lead.name} (${data.lead.phone})`);
+            }
             if (data.conversation) {
               upsertConv(data.conversation);
               bumpOrder(data.conversation.id);

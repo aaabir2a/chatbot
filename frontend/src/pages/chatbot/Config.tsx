@@ -14,6 +14,8 @@ export default function ConfigPage() {
     tone: bot.tone,
     welcome_message: bot.welcome_message,
     model: bot.model,
+    lead_enabled: bot.lead_enabled,
+    lead_after_messages: bot.lead_after_messages,
   });
   const [saving, setSaving] = useState(false);
 
@@ -66,6 +68,37 @@ export default function ConfigPage() {
           onChange={(e) => set("welcome_message", e.target.value)}
         />
       </Field>
+
+      <div className="lead-settings">
+        <label className="lead-toggle">
+          <input
+            type="checkbox"
+            checked={!!form.lead_enabled}
+            onChange={(e) => setForm({ ...form, lead_enabled: e.target.checked })}
+          />
+          <span>
+            <strong>Lead capture</strong> — show a name + phone form so a
+            salesperson can call back.
+          </span>
+        </label>
+        {form.lead_enabled && (
+          <Field label="Show the form after this many visitor messages">
+            <Input
+              type="number"
+              min={1}
+              max={20}
+              value={form.lead_after_messages ?? 3}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  lead_after_messages: Math.max(1, Number(e.target.value) || 1),
+                })
+              }
+              style={{ maxWidth: 120 }}
+            />
+          </Field>
+        )}
+      </div>
     </Card>
   );
 }

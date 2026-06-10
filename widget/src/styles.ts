@@ -105,6 +105,32 @@ export const WIDGET_CSS = `
   margin: 2px 0; padding: 2px 8px;
 }
 
+/* ── Lead capture form ── */
+.rc-lead {
+  background: var(--rc-bg); border: 1px solid var(--rc-border);
+  border-radius: 12px; padding: 14px; margin: 4px 0;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+}
+.rc-lead-title { font-weight: 700; font-size: 14px; margin-bottom: 2px; }
+.rc-lead-sub { font-size: 12.5px; color: var(--rc-text-2); margin-bottom: 10px; }
+.rc-lead-input {
+  width: 100%; border: 1px solid var(--rc-border); border-radius: 9px;
+  padding: 9px 11px; font-size: 14px; font-family: inherit; margin-bottom: 8px;
+  outline: none; color: var(--rc-text); background: var(--rc-bg);
+}
+.rc-lead-input:focus { border-color: var(--rc-primary); }
+.rc-lead-error .rc-lead-input { border-color: #e5484d; }
+.rc-lead-actions { display: flex; gap: 8px; justify-content: flex-end; }
+.rc-lead-skip {
+  background: transparent; border: none; color: var(--rc-text-2);
+  font-size: 13px; cursor: pointer; padding: 8px 10px; border-radius: 8px;
+}
+.rc-lead-skip:hover { background: var(--rc-surface); }
+.rc-lead-submit {
+  background: var(--rc-primary); color: var(--rc-on-primary); border: none;
+  border-radius: 9px; padding: 8px 14px; font-size: 13px; font-weight: 600; cursor: pointer;
+}
+
 /* ── Typing indicator ── */
 .rc-typing { display: inline-flex; gap: 4px; align-items: center; padding: 2px 0; }
 .rc-typing span {

@@ -15,11 +15,14 @@ export interface ChatSocketHandlers {
   onMode: (mode: string, text?: string, agentName?: string) => void;
   onSystem: (text: string) => void;
   onStatus: (connected: boolean) => void;
+  onLeadForm: (title: string, subtitle: string) => void;
+  onLeadSaved: (text: string) => void;
 }
 
 export interface ChatSocket {
   send: (text: string) => void;
   requestHuman: () => void;
+  sendLead: (name: string, phone: string) => void;
   close: () => void;
 }
 
@@ -68,6 +71,12 @@ export function connectChatSocket(
         case "system":
           handlers.onSystem(d.text || "");
           break;
+        case "lead_form":
+          handlers.onLeadForm(d.title || "Want a callback?", d.subtitle || "");
+          break;
+        case "lead_saved":
+          handlers.onLeadSaved(d.text || "Thank you!");
+          break;
       }
     };
   };
@@ -80,6 +89,8 @@ export function connectChatSocket(
   return {
     send: (text: string) => safeSend({ type: "message", text }),
     requestHuman: () => safeSend({ type: "request_human" }),
+    sendLead: (name: string, phone: string) =>
+      safeSend({ type: "lead", name, phone }),
     close: () => {
       closed = true;
       ws?.close();

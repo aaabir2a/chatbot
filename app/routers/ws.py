@@ -38,6 +38,30 @@ def _resolve_chatbot_by_key(db, api_key: str) -> Chatbot | None:
     return db.get(Chatbot, ak.chatbot_id)
 
 
+async def _maybe_prompt_lead(key: str, conv_id: str, chatbot_id: str) -> None:
+    """Show the lead form once, after enough visitor messages."""
+    with SessionLocal() as db:
+        conv = db.get(Conversation, conv_id)
+        cb = db.get(Chatbot, chatbot_id)
+        if not cb or not cb.lead_enabled:
+            return
+        if conv.lead_captured or conv.lead_prompted:
+            return
+        if crud.count_visitor_messages(db, conv_id) < cb.lead_after_messages:
+            return
+        conv.lead_prompted = True
+        db.commit()
+    await manager.send_to_visitor(
+        key,
+        {
+            "type": "lead_form",
+            "title": "Want a callback from our team?",
+            "subtitle": "Leave your name and phone — a specialist will reach out.",
+            "fields": ["name", "phone"],
+        },
+    )
+
+
 # ── Visitor WebSocket ───────────────────────────────────────────────────────
 @router.websocket("/ws/chat/{session_id}")
 async def ws_visitor(
@@ -89,6 +113,33 @@ async def ws_visitor(
                 )
                 continue
 
+            if mtype == "lead":
+                name = (data.get("name") or "").strip()
+                phone = (data.get("phone") or "").strip()
+                if not name or not phone:
+                    continue
+                with SessionLocal() as db:
+                    conv = db.get(Conversation, conv_id)
+                    lead = crud.create_lead(db, chatbot_id, conv_id, name, phone)
+                    conv.lead_captured = True
+                    sys_msg = crud.add_conversation_message(
+                        db, conv, "system", f"Lead captured — {name}, {phone}"
+                    )
+                    org_id = db.get(Chatbot, chatbot_id).org_id
+                    summary = crud.conversation_summary(db, conv)
+                await manager.send_to_visitor(
+                    key,
+                    {"type": "lead_saved",
+                     "text": "Thank you! Our team will contact you shortly."},
+                )
+                await manager.broadcast_to_org_agents(
+                    org_id,
+                    {"type": "lead", "conversation_id": conv_id,
+                     "lead": {"id": lead.id, "name": name, "phone": phone},
+                     "conversation": summary, "message": _msg_dict(sys_msg)},
+                )
+                continue
+
             if mtype != "message":
                 continue
 
@@ -111,6 +162,7 @@ async def ws_visitor(
 
             if mode == "human":
                 # Live agent handles it; AI stays silent.
+                await _maybe_prompt_lead(key, conv_id, chatbot_id)
                 continue
 
             # AI mode: stream a RAG answer over the socket.
@@ -134,6 +186,9 @@ async def ws_visitor(
                 {"type": "message", "conversation_id": conv_id, "message": _msg_dict(amsg),
                  "conversation": summary},
             )
+
+            # After the answer, maybe show the lead-capture form.
+            await _maybe_prompt_lead(key, conv_id, chatbot_id)
     except WebSocketDisconnect:
         manager.disconnect_visitor(key)
     except Exception:

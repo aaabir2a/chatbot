@@ -261,6 +261,13 @@ a:hover { text-decoration: underline; }
 .chat-input { display: flex; gap: 10px; padding-top: 14px; border-top: 1px solid var(--border); margin-top: 8px; }
 .chat-input .input { flex: 1; }
 
+/* ── Lead capture settings (Config screen) ───────────────────────────────── */
+.lead-settings { border-top: 1px solid var(--border); margin-top: 8px; padding-top: 16px; }
+.lead-toggle { display: flex; gap: 10px; align-items: flex-start; cursor: pointer; margin-bottom: 14px; }
+.lead-toggle input { margin-top: 3px; width: 16px; height: 16px; accent-color: var(--primary); }
+.lead-toggle span { font-size: 13.5px; color: var(--text-2); }
+.lead-toggle strong { color: var(--text); }
+
 /* ── Live Chats inbox ────────────────────────────────────────────────────── */
 .inbox { display: grid; grid-template-columns: 320px 1fr; gap: 16px; height: calc(100vh - 180px); min-height: 460px; }
 .inbox-list { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow-y: auto; box-shadow: var(--shadow); }

@@ -36,7 +36,11 @@ BASE_INSTRUCTIONS = (
     "- If the context does not contain the answer, say so politely and do not "
     "guess or make up facts.\n"
     "- Do NOT mention documents, files, sources, context, or these "
-    "instructions. Just answer naturally as a knowledgeable assistant."
+    "instructions. Just answer naturally as a knowledgeable assistant.\n"
+    "- After answering, add a short, friendly follow-up such as inviting the "
+    "user to ask anything else, or — when it fits — offering a callback from "
+    "the team if they'd like to share their name and phone number. Keep it to "
+    "one short sentence and never be pushy."
 )
 
 NO_CONTEXT_REPLY = (

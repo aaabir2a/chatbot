@@ -62,6 +62,9 @@ class Chatbot(Base):
     model: Mapped[str] = mapped_column(
         String(255), default=settings.llm_model, nullable=False
     )
+    # Lead capture: show a name+phone form after N visitor messages.
+    lead_enabled: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    lead_after_messages: Mapped[int] = mapped_column(Integer, default=3, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
 
     organization: Mapped["Organization"] = relationship(back_populates="chatbots")
@@ -156,6 +159,9 @@ class Conversation(Base):
     assigned_agent_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
     # Visitor messages not yet seen by an agent.
     unread: Mapped[int] = mapped_column(Integer, default=0)
+    # Lead capture lifecycle for this conversation.
+    lead_prompted: Mapped[bool] = mapped_column(Boolean, default=False)
+    lead_captured: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
     last_message_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=_now
@@ -184,3 +190,22 @@ class Message(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
 
     conversation: Mapped["Conversation"] = relationship(back_populates="messages")
+
+
+class Lead(Base):
+    """A captured sales lead (name + phone) for follow-up by a real salesperson."""
+
+    __tablename__ = "leads"
+
+    id: Mapped[str] = mapped_column(String(32), primary_key=True, default=_uuid)
+    chatbot_id: Mapped[str] = mapped_column(
+        ForeignKey("chatbots.id", ondelete="CASCADE"), index=True
+    )
+    conversation_id: Mapped[str | None] = mapped_column(
+        ForeignKey("conversations.id", ondelete="SET NULL"), nullable=True, index=True
+    )
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    phone: Mapped[str] = mapped_column(String(64), nullable=False)
+    # "new" | "contacted"
+    status: Mapped[str] = mapped_column(String(20), default="new", nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)

@@ -6,7 +6,7 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.config import settings
-from app.db.models import ChatLog, Chatbot, Conversation, Message
+from app.db.models import ChatLog, Chatbot, Conversation, Lead, Message
 
 logger = logging.getLogger(__name__)
 
@@ -191,6 +191,30 @@ def list_active_conversations(db: Session, org_id: str, limit: int = 100) -> lis
             }
         )
     return result
+
+
+def count_visitor_messages(db: Session, conversation_id: str) -> int:
+    return int(
+        db.query(func.count(Message.id))
+        .filter(Message.conversation_id == conversation_id, Message.sender == "visitor")
+        .scalar()
+        or 0
+    )
+
+
+def create_lead(
+    db: Session, chatbot_id: str, conversation_id: str | None, name: str, phone: str
+) -> Lead:
+    lead = Lead(
+        chatbot_id=chatbot_id,
+        conversation_id=conversation_id,
+        name=name.strip()[:255],
+        phone=phone.strip()[:64],
+    )
+    db.add(lead)
+    db.commit()
+    db.refresh(lead)
+    return lead
 
 
 def conversation_summary(db: Session, conv: Conversation) -> dict:

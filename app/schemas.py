@@ -37,6 +37,8 @@ class ChatbotCreate(BaseModel):
     tone: str | None = Field(default=None, max_length=255)
     welcome_message: str | None = Field(default=None, max_length=2000)
     model: str | None = Field(default=None, max_length=255)
+    lead_enabled: bool | None = None
+    lead_after_messages: int | None = Field(default=None, ge=1, le=20)
 
 
 class ChatbotUpdate(BaseModel):
@@ -45,6 +47,8 @@ class ChatbotUpdate(BaseModel):
     tone: str | None = Field(default=None, max_length=255)
     welcome_message: str | None = Field(default=None, max_length=2000)
     model: str | None = Field(default=None, max_length=255)
+    lead_enabled: bool | None = None
+    lead_after_messages: int | None = Field(default=None, ge=1, le=20)
 
 
 class ChatbotInfo(BaseModel):
@@ -56,6 +60,8 @@ class ChatbotInfo(BaseModel):
     tone: str
     welcome_message: str
     model: str
+    lead_enabled: bool
+    lead_after_messages: int
     created_at: datetime
 
 
@@ -117,6 +123,22 @@ class DocumentList(BaseModel):
 class DeleteResponse(BaseModel):
     document_id: str
     deleted_chunks: int
+
+
+# ── Leads ────────────────────────────────────────────────────────────────────
+class LeadInfo(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: str
+    chatbot_id: str
+    conversation_id: str | None
+    name: str
+    phone: str
+    status: str
+    created_at: datetime
+
+
+class LeadStatusUpdate(BaseModel):
+    status: str = Field(..., pattern="^(new|contacted)$")
 
 
 # ── Usage ────────────────────────────────────────────────────────────────────

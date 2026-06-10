@@ -12,6 +12,12 @@
       "runtimeExecutable": "python",
       "runtimeArgs": ["-m", "http.server", "3000", "--directory", "widget"],
       "port": 3000
+    },
+    {
+      "name": "novodito",
+      "runtimeExecutable": "D:/Kratos-office/chatbot/.claude/run-novodito.cmd",
+      "runtimeArgs": [],
+      "port": 3100
     }
   ]
 }

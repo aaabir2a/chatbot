@@ -184,6 +184,50 @@ export function createChatWidget(opts: ChatWidgetOptions): ChatWidgetInstance {
     }
   };
 
+  let leadFormEl: HTMLElement | null = null;
+  const removeLeadForm = () => {
+    leadFormEl?.remove();
+    leadFormEl = null;
+  };
+
+  const renderLeadForm = (title: string, subtitle: string) => {
+    if (leadFormEl) return; // only one at a time
+    const wrap = document.createElement("div");
+    wrap.className = "rc-lead";
+    wrap.innerHTML = `
+      <div class="rc-lead-title"></div>
+      <div class="rc-lead-sub"></div>
+      <input class="rc-lead-input rc-lead-name" type="text" placeholder="Your name" />
+      <input class="rc-lead-input rc-lead-phone" type="tel" placeholder="Phone number" />
+      <div class="rc-lead-actions">
+        <button type="button" class="rc-lead-skip">No thanks</button>
+        <button type="button" class="rc-lead-submit">Request callback</button>
+      </div>
+    `;
+    (wrap.querySelector(".rc-lead-title") as HTMLElement).textContent = title;
+    (wrap.querySelector(".rc-lead-sub") as HTMLElement).textContent = subtitle;
+    const nameI = wrap.querySelector(".rc-lead-name") as HTMLInputElement;
+    const phoneI = wrap.querySelector(".rc-lead-phone") as HTMLInputElement;
+    const submit = wrap.querySelector(".rc-lead-submit") as HTMLButtonElement;
+    const skip = wrap.querySelector(".rc-lead-skip") as HTMLButtonElement;
+
+    submit.addEventListener("click", () => {
+      const name = nameI.value.trim();
+      const phone = phoneI.value.trim();
+      if (!name || phone.replace(/\D/g, "").length < 6) {
+        wrap.classList.add("rc-lead-error");
+        return;
+      }
+      socket?.sendLead(name, phone);
+      removeLeadForm();
+    });
+    skip.addEventListener("click", removeLeadForm);
+
+    messagesEl.appendChild(wrap);
+    leadFormEl = wrap;
+    scrollDown();
+  };
+
   // ── Socket ──
   const buildHandlers = () => ({
     onStatus: () => {},
@@ -222,6 +266,11 @@ export function createChatWidget(opts: ChatWidgetOptions): ChatWidgetInstance {
       if (text) appendMsg({ role: "system", text });
     },
     onSystem: (text: string) => appendMsg({ role: "system", text }),
+    onLeadForm: (title: string, subtitle: string) => renderLeadForm(title, subtitle),
+    onLeadSaved: (text: string) => {
+      removeLeadForm();
+      appendMsg({ role: "system", text });
+    },
   });
 
   socket = connectChatSocket(opts.apiUrl, opts.apiKey, sessionId, buildHandlers());
@@ -280,6 +329,7 @@ export function createChatWidget(opts: ChatWidgetOptions): ChatWidgetInstance {
     }
     messages = [];
     streamingBot = null;
+    leadFormEl = null;
     renderAll();
     // Reconnect with the new session id (reuse the same handlers).
     socket?.close();

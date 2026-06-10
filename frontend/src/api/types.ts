@@ -21,6 +21,8 @@ export interface Chatbot {
   tone: string;
   welcome_message: string;
   model: string;
+  lead_enabled: boolean;
+  lead_after_messages: number;
   created_at: string;
 }
 
@@ -30,6 +32,18 @@ export interface ChatbotInput {
   tone?: string;
   welcome_message?: string;
   model?: string;
+  lead_enabled?: boolean;
+  lead_after_messages?: number;
+}
+
+export interface Lead {
+  id: string;
+  chatbot_id: string;
+  conversation_id: string | null;
+  name: string;
+  phone: string;
+  status: "new" | "contacted";
+  created_at: string;
 }
 
 export interface ApiKeyInfo {
