@@ -133,6 +133,7 @@ class LeadInfo(BaseModel):
     conversation_id: str | None
     name: str
     phone: str
+    email: str | None = None
     status: str
     created_at: datetime
 

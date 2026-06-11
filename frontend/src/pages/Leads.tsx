@@ -66,6 +66,7 @@ export default function Leads() {
               <tr>
                 <th>Name</th>
                 <th>Phone</th>
+                <th>Email</th>
                 <th>Chatbot</th>
                 <th>When</th>
                 <th>Status</th>
@@ -78,6 +79,9 @@ export default function Leads() {
                   <td>{l.name}</td>
                   <td className="mono">
                     <a href={`tel:${l.phone}`}>{l.phone}</a>
+                  </td>
+                  <td className="mono">
+                    {l.email ? <a href={`mailto:${l.email}`}>{l.email}</a> : "—"}
                   </td>
                   <td>{bots[l.chatbot_id] || "—"}</td>
                   <td className="muted">{new Date(l.created_at).toLocaleString()}</td>

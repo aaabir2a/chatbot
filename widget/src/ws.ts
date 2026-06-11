@@ -22,7 +22,8 @@ export interface ChatSocketHandlers {
 export interface ChatSocket {
   send: (text: string) => void;
   requestHuman: () => void;
-  sendLead: (name: string, phone: string) => void;
+  sendLead: (name: string, phone: string, email?: string) => void;
+  sendLeadSkip: () => void;
   close: () => void;
 }
 
@@ -89,8 +90,9 @@ export function connectChatSocket(
   return {
     send: (text: string) => safeSend({ type: "message", text }),
     requestHuman: () => safeSend({ type: "request_human" }),
-    sendLead: (name: string, phone: string) =>
-      safeSend({ type: "lead", name, phone }),
+    sendLead: (name: string, phone: string, email?: string) =>
+      safeSend({ type: "lead", name, phone, email: email || "" }),
+    sendLeadSkip: () => safeSend({ type: "lead_skip" }),
     close: () => {
       closed = true;
       ws?.close();

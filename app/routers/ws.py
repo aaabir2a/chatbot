@@ -39,25 +39,35 @@ def _resolve_chatbot_by_key(db, api_key: str) -> Chatbot | None:
 
 
 async def _maybe_prompt_lead(key: str, conv_id: str, chatbot_id: str) -> None:
-    """Show the lead form once, after enough visitor messages."""
+    """Show the lead form after enough visitor messages.
+
+    First shown after lead_after_messages. If the visitor skips ("No thanks"),
+    lead_next_at schedules a re-prompt after that many MORE messages.
+    """
     with SessionLocal() as db:
         conv = db.get(Conversation, conv_id)
         cb = db.get(Chatbot, chatbot_id)
-        if not cb or not cb.lead_enabled:
+        if not cb or not cb.lead_enabled or conv.lead_captured:
             return
-        if conv.lead_captured or conv.lead_prompted:
-            return
-        if crud.count_visitor_messages(db, conv_id) < cb.lead_after_messages:
+        count = crud.count_visitor_messages(db, conv_id)
+        if not conv.lead_prompted:
+            threshold = cb.lead_after_messages          # first prompt
+        elif conv.lead_next_at is not None:
+            threshold = conv.lead_next_at               # re-prompt after a skip
+        else:
+            return  # form currently shown / awaiting a response
+        if count < threshold:
             return
         conv.lead_prompted = True
+        conv.lead_next_at = None
         db.commit()
     await manager.send_to_visitor(
         key,
         {
             "type": "lead_form",
             "title": "Want a callback from our team?",
-            "subtitle": "Leave your name and phone — a specialist will reach out.",
-            "fields": ["name", "phone"],
+            "subtitle": "Leave your details — a specialist will reach out.",
+            "fields": ["name", "phone", "email"],
         },
     )
 
@@ -151,15 +161,18 @@ async def _handle_visitor_event(
     if mtype == "lead":
         name = (data.get("name") or "").strip()
         phone = (data.get("phone") or "").strip()
+        email = (data.get("email") or "").strip()
         if not name or not phone:
             return
         with SessionLocal() as db:
             conv = db.get(Conversation, conv_id)
-            lead = crud.create_lead(db, chatbot_id, conv_id, name, phone)
+            lead = crud.create_lead(db, chatbot_id, conv_id, name, phone, email)
             lead_id = lead.id
             conv.lead_captured = True
+            conv.lead_next_at = None
+            details = f"{name}, {phone}" + (f", {email}" if email else "")
             sys_msg = crud.add_conversation_message(
-                db, conv, "system", f"Lead captured — {name}, {phone}"
+                db, conv, "system", f"Lead captured — {details}"
             )
             sys_dict = _msg_dict(sys_msg)
             org_id = db.get(Chatbot, chatbot_id).org_id
@@ -172,9 +185,23 @@ async def _handle_visitor_event(
         await manager.broadcast_to_org_agents(
             org_id,
             {"type": "lead", "conversation_id": conv_id,
-             "lead": {"id": lead_id, "name": name, "phone": phone},
+             "lead": {"id": lead_id, "name": name, "phone": phone,
+                      "email": email or None},
              "conversation": summary, "message": sys_dict},
         )
+        return
+
+    if mtype == "lead_skip":
+        # Visitor declined the form: re-offer it after lead_after_messages
+        # more visitor messages.
+        with SessionLocal() as db:
+            conv = db.get(Conversation, conv_id)
+            cb = db.get(Chatbot, chatbot_id)
+            if conv.lead_captured or not cb:
+                return
+            count = crud.count_visitor_messages(db, conv_id)
+            conv.lead_next_at = count + cb.lead_after_messages
+            db.commit()
         return
 
     if mtype != "message":

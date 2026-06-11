@@ -199,6 +199,7 @@ export function createChatWidget(opts: ChatWidgetOptions): ChatWidgetInstance {
       <div class="rc-lead-sub"></div>
       <input class="rc-lead-input rc-lead-name" type="text" placeholder="Your name" />
       <input class="rc-lead-input rc-lead-phone" type="tel" placeholder="Phone number" />
+      <input class="rc-lead-input rc-lead-email" type="email" placeholder="Email" />
       <div class="rc-lead-actions">
         <button type="button" class="rc-lead-skip">No thanks</button>
         <button type="button" class="rc-lead-submit">Request callback</button>
@@ -208,20 +209,30 @@ export function createChatWidget(opts: ChatWidgetOptions): ChatWidgetInstance {
     (wrap.querySelector(".rc-lead-sub") as HTMLElement).textContent = subtitle;
     const nameI = wrap.querySelector(".rc-lead-name") as HTMLInputElement;
     const phoneI = wrap.querySelector(".rc-lead-phone") as HTMLInputElement;
+    const emailI = wrap.querySelector(".rc-lead-email") as HTMLInputElement;
     const submit = wrap.querySelector(".rc-lead-submit") as HTMLButtonElement;
     const skip = wrap.querySelector(".rc-lead-skip") as HTMLButtonElement;
 
     submit.addEventListener("click", () => {
       const name = nameI.value.trim();
       const phone = phoneI.value.trim();
+      const email = emailI.value.trim();
       if (!name || phone.replace(/\D/g, "").length < 6) {
         wrap.classList.add("rc-lead-error");
         return;
       }
-      socket?.sendLead(name, phone);
+      if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        wrap.classList.add("rc-lead-error");
+        return;
+      }
+      socket?.sendLead(name, phone, email);
       removeLeadForm();
     });
-    skip.addEventListener("click", removeLeadForm);
+    skip.addEventListener("click", () => {
+      // Tell the server so it can re-offer the form after a few more messages.
+      socket?.sendLeadSkip();
+      removeLeadForm();
+    });
 
     messagesEl.appendChild(wrap);
     leadFormEl = wrap;

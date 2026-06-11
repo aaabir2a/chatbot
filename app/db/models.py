@@ -162,6 +162,8 @@ class Conversation(Base):
     # Lead capture lifecycle for this conversation.
     lead_prompted: Mapped[bool] = mapped_column(Boolean, default=False)
     lead_captured: Mapped[bool] = mapped_column(Boolean, default=False)
+    # After a skip: re-show the form once the visitor message count reaches this.
+    lead_next_at: Mapped[int | None] = mapped_column(Integer, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
     last_message_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=_now
@@ -206,6 +208,7 @@ class Lead(Base):
     )
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     phone: Mapped[str] = mapped_column(String(64), nullable=False)
+    email: Mapped[str | None] = mapped_column(String(320), nullable=True)
     # "new" | "contacted"
     status: Mapped[str] = mapped_column(String(20), default="new", nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)

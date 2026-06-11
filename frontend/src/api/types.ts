@@ -42,6 +42,7 @@ export interface Lead {
   conversation_id: string | null;
   name: string;
   phone: string;
+  email: string | null;
   status: "new" | "contacted";
   created_at: string;
 }

@@ -85,7 +85,9 @@ async def main():
         lf = await recv_until(v, "lead_form", timeout=10)
         check(lf.get("type") == "lead_form", "lead_form shown after 2 messages")
 
-        await v.send(json.dumps({"type": "lead", "name": "Test User", "phone": "1300089547"}))
+        check("email" in (lf.get("fields") or []), "lead_form includes email field")
+        await v.send(json.dumps({"type": "lead", "name": "Test User",
+                                 "phone": "1300089547", "email": "test@example.com"}))
         saved = await recv_until(v, "lead_saved", timeout=10)
         check(saved.get("type") == "lead_saved", "lead_saved acknowledged")
 
@@ -103,18 +105,24 @@ async def main():
         lf = await recv_until(v, "lead_form", timeout=10)
         check(lf.get("type") == "lead_form", "lead_form shown after 2 messages")
 
-        # Skip = client-side only; just keep chatting.
+        # Skip notifies the server -> re-prompt scheduled after N more messages.
+        await v.send(json.dumps({"type": "lead_skip"}))
         b3 = await ask(v, "What is the return policy?")
         check("30" in b3, "REGRESSION: AI still replies after skipping the form")
 
-        # Form must not re-appear (lead_prompted already set).
-        reshown = False
+        # Not yet: only 1 message since the skip (threshold is 2 here).
+        early = False
         try:
-            await recv_until(v, "lead_form", timeout=4)
-            reshown = True
+            await recv_until(v, "lead_form", timeout=3)
+            early = True
         except asyncio.TimeoutError:
             pass
-        check(not reshown, "lead_form not shown twice")
+        check(not early, "form not re-shown before threshold")
+
+        # 2nd message since skip -> form must re-appear.
+        await ask(v, "Do you ship internationally?")
+        lf2 = await recv_until(v, "lead_form", timeout=10)
+        check(lf2.get("type") == "lead_form", "form RE-shown after N more messages post-skip")
 
     # ── Persistence ──
     async with httpx.AsyncClient() as c:
@@ -122,6 +130,8 @@ async def main():
         leads = (await c.get(f"{BASE}/leads?chatbot_id={CHATBOT_ID}", headers=H)).json()
         mine = [l for l in leads if l["name"] == "Test User" and l["phone"] == "1300089547"]
         check(len(mine) >= 1, "lead stored and listed via /leads")
+        if mine:
+            check(mine[0].get("email") == "test@example.com", "lead email stored")
         # reset trigger back to 3
         await c.patch(f"{BASE}/chatbots/{CHATBOT_ID}", headers=H,
                       json={"lead_after_messages": 3})

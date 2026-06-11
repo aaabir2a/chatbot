@@ -203,13 +203,19 @@ def count_visitor_messages(db: Session, conversation_id: str) -> int:
 
 
 def create_lead(
-    db: Session, chatbot_id: str, conversation_id: str | None, name: str, phone: str
+    db: Session,
+    chatbot_id: str,
+    conversation_id: str | None,
+    name: str,
+    phone: str,
+    email: str | None = None,
 ) -> Lead:
     lead = Lead(
         chatbot_id=chatbot_id,
         conversation_id=conversation_id,
         name=name.strip()[:255],
         phone=phone.strip()[:64],
+        email=(email.strip()[:320] if email and email.strip() else None),
     )
     db.add(lead)
     db.commit()

@@ -1,4 +1,10 @@
+# for fast vps deploy 
+cd ~/chatbot && git pull
+docker compose -f docker-compose.vps.yml --env-file .env.prod up -d --build
+
+
 # Self-hosted Multi-tenant RAG Chatbot (backend)
+
 
 Self-hosted Retrieval-Augmented-Generation engine that serves **many isolated
 chatbots**, each reached by its own API key. Upload docs per chatbot → ask
