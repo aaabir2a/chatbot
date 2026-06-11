@@ -42,6 +42,12 @@ services:
     environment:
       - OLLAMA_KEEP_ALIVE=10m
       - OLLAMA_MAX_LOADED_MODELS=1
+      # Serve 2 chats simultaneously instead of queueing (each ~half speed).
+      # On 6 vCPU + a 1.5b model, 2 is the sweet spot; 3+ degrades everyone.
+      - OLLAMA_NUM_PARALLEL=2
+    # Cap generation to 5 of 6 cores so nginx + the other sites on this VPS
+    # stay responsive while the bot is generating.
+    cpus: 5.0
 
   api:
     build:

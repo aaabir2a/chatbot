@@ -38,6 +38,10 @@ services:
     environment:
       - OLLAMA_KEEP_ALIVE=10m
       - OLLAMA_MAX_LOADED_MODELS=1
+      # Serve 2 chats simultaneously instead of queueing (each ~half speed).
+      - OLLAMA_NUM_PARALLEL=2
+    # Leave one core free so the rest of the host stays responsive.
+    cpus: 5.0
 
   api:
     build:
