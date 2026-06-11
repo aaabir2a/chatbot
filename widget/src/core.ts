@@ -237,6 +237,11 @@ export function createChatWidget(opts: ChatWidgetOptions): ChatWidgetInstance {
         text: w.content,
         name: w.agent_name || undefined,
       }));
+      // renderAll wipes the DOM — drop refs to removed nodes, otherwise the
+      // typing indicator can never be shown again after a reconnect.
+      typingEl = null;
+      streamingBot = null;
+      leadFormEl = null;
       applyMode(m, name);
       renderAll();
     },

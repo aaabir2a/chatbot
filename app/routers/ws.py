@@ -92,108 +92,145 @@ async def ws_visitor(
     try:
         while True:
             data = await websocket.receive_json()
-            mtype = data.get("type")
-
-            if mtype == "request_human":
-                with SessionLocal() as db:
-                    conv = db.get(Conversation, conv_id)
-                    conv.waiting_for_human = True
-                    sys_msg = crud.add_conversation_message(
-                        db, conv, "system", "Visitor requested a human agent."
-                    )
-                    summary = crud.conversation_summary(db, conv)
-                    org_id = db.get(Chatbot, chatbot_id).org_id
-                await websocket.send_json(
-                    {"type": "system", "text": "A team member has been notified and will join shortly."}
+            # One bad event must NOT kill the connection: handle each event in
+            # its own try/except and keep the loop alive on failure.
+            try:
+                await _handle_visitor_event(
+                    websocket, key, conv_id, chatbot_id, session_id, data
                 )
-                await manager.broadcast_to_org_agents(
-                    org_id,
-                    {"type": "conversation_updated", "conversation": summary,
-                     "message": _msg_dict(sys_msg)},
-                )
-                continue
-
-            if mtype == "lead":
-                name = (data.get("name") or "").strip()
-                phone = (data.get("phone") or "").strip()
-                if not name or not phone:
-                    continue
-                with SessionLocal() as db:
-                    conv = db.get(Conversation, conv_id)
-                    lead = crud.create_lead(db, chatbot_id, conv_id, name, phone)
-                    conv.lead_captured = True
-                    sys_msg = crud.add_conversation_message(
-                        db, conv, "system", f"Lead captured — {name}, {phone}"
-                    )
-                    org_id = db.get(Chatbot, chatbot_id).org_id
-                    summary = crud.conversation_summary(db, conv)
+            except WebSocketDisconnect:
+                raise
+            except Exception:
+                logger.exception("Visitor event failed for %s (kept alive)", key)
+                # Unstick the widget (clears its typing indicator).
+                await manager.send_to_visitor(key, {"type": "ai_done"})
                 await manager.send_to_visitor(
                     key,
-                    {"type": "lead_saved",
-                     "text": "Thank you! Our team will contact you shortly."},
+                    {"type": "system",
+                     "text": "Sorry, something went wrong. Please try again."},
                 )
-                await manager.broadcast_to_org_agents(
-                    org_id,
-                    {"type": "lead", "conversation_id": conv_id,
-                     "lead": {"id": lead.id, "name": name, "phone": phone},
-                     "conversation": summary, "message": _msg_dict(sys_msg)},
-                )
-                continue
-
-            if mtype != "message":
-                continue
-
-            text = (data.get("text") or "").strip()
-            if not text:
-                continue
-
-            # Persist visitor message; notify agents.
-            with SessionLocal() as db:
-                conv = db.get(Conversation, conv_id)
-                vmsg = crud.add_conversation_message(db, conv, "visitor", text)
-                mode = conv.mode
-                org_id = db.get(Chatbot, chatbot_id).org_id
-                summary = crud.conversation_summary(db, conv)
-            await manager.broadcast_to_org_agents(
-                org_id,
-                {"type": "message", "conversation_id": conv_id, "message": _msg_dict(vmsg),
-                 "conversation": summary},
-            )
-
-            if mode == "human":
-                # Live agent handles it; AI stays silent.
-                await _maybe_prompt_lead(key, conv_id, chatbot_id)
-                continue
-
-            # AI mode: stream a RAG answer over the socket.
-            with SessionLocal() as db:
-                conv = db.get(Conversation, conv_id)
-                history = crud.history_for_llm(db, conv_id)
-                cb = db.get(Chatbot, chatbot_id)
-                usage: dict = {}
-                parts: list[str] = []
-                async for token in rag.stream_rag(cb, text, history, usage):
-                    parts.append(token)
-                    await manager.send_to_visitor(key, {"type": "token", "token": token})
-                await manager.send_to_visitor(key, {"type": "ai_done"})
-                answer = "".join(parts)
-                amsg = crud.add_conversation_message(db, conv, "ai", answer)
-                turn = crud.next_turn_number(db, chatbot_id, session_id)
-                crud.log_turn(db, chatbot_id, session_id, text, answer, turn, usage)
-                summary = crud.conversation_summary(db, conv)
-            await manager.broadcast_to_org_agents(
-                org_id,
-                {"type": "message", "conversation_id": conv_id, "message": _msg_dict(amsg),
-                 "conversation": summary},
-            )
-
-            # After the answer, maybe show the lead-capture form.
-            await _maybe_prompt_lead(key, conv_id, chatbot_id)
     except WebSocketDisconnect:
         manager.disconnect_visitor(key)
     except Exception:
         logger.exception("Visitor WS error for %s", key)
         manager.disconnect_visitor(key)
+
+
+async def _handle_visitor_event(
+    websocket: WebSocket,
+    key: str,
+    conv_id: str,
+    chatbot_id: str,
+    session_id: str,
+    data: dict,
+) -> None:
+    """Process one visitor WS event. ORM objects are serialized to plain dicts
+    INSIDE each session block — they expire on commit and detach on close."""
+    mtype = data.get("type")
+
+    if mtype == "request_human":
+        with SessionLocal() as db:
+            conv = db.get(Conversation, conv_id)
+            conv.waiting_for_human = True
+            sys_msg = crud.add_conversation_message(
+                db, conv, "system", "Visitor requested a human agent."
+            )
+            sys_dict = _msg_dict(sys_msg)
+            summary = crud.conversation_summary(db, conv)
+            org_id = db.get(Chatbot, chatbot_id).org_id
+        await websocket.send_json(
+            {"type": "system", "text": "A team member has been notified and will join shortly."}
+        )
+        await manager.broadcast_to_org_agents(
+            org_id,
+            {"type": "conversation_updated", "conversation": summary,
+             "message": sys_dict},
+        )
+        return
+
+    if mtype == "lead":
+        name = (data.get("name") or "").strip()
+        phone = (data.get("phone") or "").strip()
+        if not name or not phone:
+            return
+        with SessionLocal() as db:
+            conv = db.get(Conversation, conv_id)
+            lead = crud.create_lead(db, chatbot_id, conv_id, name, phone)
+            lead_id = lead.id
+            conv.lead_captured = True
+            sys_msg = crud.add_conversation_message(
+                db, conv, "system", f"Lead captured — {name}, {phone}"
+            )
+            sys_dict = _msg_dict(sys_msg)
+            org_id = db.get(Chatbot, chatbot_id).org_id
+            summary = crud.conversation_summary(db, conv)
+        await manager.send_to_visitor(
+            key,
+            {"type": "lead_saved",
+             "text": "Thank you! Our team will contact you shortly."},
+        )
+        await manager.broadcast_to_org_agents(
+            org_id,
+            {"type": "lead", "conversation_id": conv_id,
+             "lead": {"id": lead_id, "name": name, "phone": phone},
+             "conversation": summary, "message": sys_dict},
+        )
+        return
+
+    if mtype != "message":
+        return
+
+    text = (data.get("text") or "").strip()
+    if not text:
+        return
+
+    # Persist visitor message; notify agents.
+    with SessionLocal() as db:
+        conv = db.get(Conversation, conv_id)
+        vmsg = crud.add_conversation_message(db, conv, "visitor", text)
+        vmsg_dict = _msg_dict(vmsg)
+        mode = conv.mode
+        org_id = db.get(Chatbot, chatbot_id).org_id
+        summary = crud.conversation_summary(db, conv)
+    await manager.broadcast_to_org_agents(
+        org_id,
+        {"type": "message", "conversation_id": conv_id, "message": vmsg_dict,
+         "conversation": summary},
+    )
+
+    if mode == "human":
+        # Live agent handles it; AI stays silent.
+        await _maybe_prompt_lead(key, conv_id, chatbot_id)
+        return
+
+    # AI mode: stream a RAG answer over the socket.
+    with SessionLocal() as db:
+        conv = db.get(Conversation, conv_id)
+        history = crud.history_for_llm(db, conv_id)
+        cb = db.get(Chatbot, chatbot_id)
+        usage: dict = {}
+        parts: list[str] = []
+        try:
+            async for token in rag.stream_rag(cb, text, history, usage):
+                parts.append(token)
+                await manager.send_to_visitor(key, {"type": "token", "token": token})
+        finally:
+            # Always release the widget's typing indicator, even on LLM errors.
+            await manager.send_to_visitor(key, {"type": "ai_done"})
+        answer = "".join(parts)
+        amsg = crud.add_conversation_message(db, conv, "ai", answer)
+        amsg_dict = _msg_dict(amsg)
+        turn = crud.next_turn_number(db, chatbot_id, session_id)
+        crud.log_turn(db, chatbot_id, session_id, text, answer, turn, usage)
+        summary = crud.conversation_summary(db, conv)
+    await manager.broadcast_to_org_agents(
+        org_id,
+        {"type": "message", "conversation_id": conv_id, "message": amsg_dict,
+         "conversation": summary},
+    )
+
+    # After the answer, maybe show the lead-capture form.
+    await _maybe_prompt_lead(key, conv_id, chatbot_id)
 
 
 # ── Agent WebSocket ─────────────────────────────────────────────────────────
