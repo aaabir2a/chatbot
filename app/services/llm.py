@@ -167,9 +167,9 @@ class OpenAICompatProvider:
             raise ValueError(f"LLM_API_KEY is required for provider '{settings.llm_provider}'.")
         self.base = base
         self.key = settings.llm_api_key
-        # A per-chatbot Ollama tag (e.g. "qwen2.5:1.5b") is meaningless to a
-        # hosted API — fall back to the configured remote model name.
-        self.model = model if (model and ":" not in model) else settings.llm_model
+        # Model is set per-chatbot in the dashboard (Config > Model). Falls back
+        # to LLM_MODEL only if a chatbot has no model set.
+        self.model = model or settings.llm_model
         self.last_usage: dict = {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
 
     async def stream_chat(self, messages: list[dict]) -> AsyncIterator[str]:

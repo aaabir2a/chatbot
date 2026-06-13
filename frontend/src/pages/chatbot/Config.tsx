@@ -57,8 +57,15 @@ export default function ConfigPage() {
         <Field label="Tone">
           <Input value={form.tone} onChange={(e) => set("tone", e.target.value)} />
         </Field>
-        <Field label="Model" hint="Must be pulled in Ollama.">
-          <Input value={form.model} onChange={(e) => set("model", e.target.value)} />
+        <Field
+          label="Model"
+          hint="Groq: llama-3.1-8b-instant · llama-3.3-70b-versatile · qwen/qwen3-32b. Ollama: qwen2.5:1.5b"
+        >
+          <Input
+            value={form.model}
+            onChange={(e) => set("model", e.target.value)}
+            placeholder="llama-3.1-8b-instant"
+          />
         </Field>
       </div>
       <Field label="Welcome message">
