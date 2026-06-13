@@ -9,7 +9,8 @@ class Settings(BaseSettings):
         env_file=".env", env_file_encoding="utf-8", extra="ignore"
     )
 
-    # --- LLM (provider abstracted; swap by changing these two values) ---
+    # --- LLM (provider abstracted; swap by changing these values) ---
+    # ollama | gemini | groq | openai | deepseek | openai_compat
     llm_provider: str = "ollama"
     ollama_url: str = "http://localhost:11434"
     llm_model: str = "qwen2.5:3b"
@@ -17,6 +18,12 @@ class Settings(BaseSettings):
     # Small context window tuned for a 3B model on CPU.
     llm_num_ctx: int = 4096
     llm_timeout: float = 120.0
+
+    # Hosted LLM API (gemini/groq/openai/deepseek/openai_compat). The key lives
+    # only in .env / .env.prod, never in code. llm_api_base overrides the
+    # provider's default endpoint (required for openai_compat).
+    llm_api_key: str = ""
+    llm_api_base: str = ""
 
     # --- Embeddings ---
     embedding_model: str = "all-MiniLM-L6-v2"
