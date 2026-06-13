@@ -86,6 +86,70 @@ def _estimate_tokens(text: str) -> int:
     return max(0, len(text) // 4)  # ~4 chars/token heuristic
 
 
+def _tail_overlap(s: str, tag: str) -> int:
+    """Largest k where s ends with tag[:k] — a tag split across token chunks."""
+    for k in range(min(len(s), len(tag) - 1), 0, -1):
+        if s.endswith(tag[:k]):
+            return k
+    return 0
+
+
+class _ThinkStripper:
+    """Remove <think>...</think> reasoning blocks from a streamed response,
+    correctly even when the tags are split across token boundaries."""
+
+    OPEN, CLOSE = "<think>", "</think>"
+
+    def __init__(self) -> None:
+        self.buf = ""
+        self.in_think = False
+
+    def feed(self, text: str) -> str:
+        self.buf += text
+        out: list[str] = []
+        while True:
+            if not self.in_think:
+                i = self.buf.find(self.OPEN)
+                if i == -1:
+                    keep = _tail_overlap(self.buf, self.OPEN)
+                    out.append(self.buf[: len(self.buf) - keep])
+                    self.buf = self.buf[len(self.buf) - keep :]
+                    break
+                out.append(self.buf[:i])
+                self.buf = self.buf[i + len(self.OPEN) :]
+                self.in_think = True
+            else:
+                j = self.buf.find(self.CLOSE)
+                if j == -1:
+                    keep = _tail_overlap(self.buf, self.CLOSE)
+                    self.buf = self.buf[len(self.buf) - keep :]
+                    break
+                self.buf = self.buf[j + len(self.CLOSE) :]
+                self.in_think = False
+        return "".join(out)
+
+    def flush(self) -> str:
+        return "" if self.in_think else self.buf
+
+
+async def _strip_think(source: AsyncIterator[str]) -> AsyncIterator[str]:
+    stripper = _ThinkStripper()
+    started = False
+    async for tok in source:
+        out = stripper.feed(tok)
+        if not out:
+            continue
+        if not started:
+            out = out.lstrip()  # drop blank lines left where <think> was
+            if not out:
+                continue
+            started = True
+        yield out
+    tail = stripper.flush()
+    if tail:
+        yield tail if started else tail.lstrip()
+
+
 class OpenAICompatProvider:
     """Streams from any OpenAI-compatible chat API (Gemini/Groq/OpenAI/DeepSeek).
 
@@ -109,6 +173,11 @@ class OpenAICompatProvider:
         self.last_usage: dict = {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
 
     async def stream_chat(self, messages: list[dict]) -> AsyncIterator[str]:
+        # Strip <think>...</think> from reasoning models (e.g. qwen3).
+        async for token in _strip_think(self._raw_chat(messages)):
+            yield token
+
+    async def _raw_chat(self, messages: list[dict]) -> AsyncIterator[str]:
         payload = {
             "model": self.model,
             "messages": messages,
