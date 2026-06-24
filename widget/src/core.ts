@@ -1,3 +1,4 @@
+import { renderMarkdown } from "./md";
 import { WIDGET_CSS } from "./styles";
 import type { ChatWidgetInstance, ChatWidgetOptions } from "./types";
 import { connectChatSocket, type ChatSocket, type WireMessage } from "./ws";
@@ -127,7 +128,15 @@ export function createChatWidget(opts: ChatWidgetOptions): ChatWidgetInstance {
       meta.textContent = m.name;
       b.appendChild(meta);
     }
-    b.appendChild(document.createTextNode(m.text));
+    if (m.role === "bot" || m.role === "agent") {
+      // Render Markdown (bold, lists, links) — safely (escaped in renderMarkdown).
+      const body = document.createElement("div");
+      body.className = "rc-md";
+      body.innerHTML = renderMarkdown(m.text);
+      b.appendChild(body);
+    } else {
+      b.appendChild(document.createTextNode(m.text));
+    }
     row.appendChild(b);
     return row;
   };
@@ -266,12 +275,17 @@ export function createChatWidget(opts: ChatWidgetOptions): ChatWidgetInstance {
         streamingBot = { msg, el: row.querySelector(".rc-bubble") as HTMLElement };
       }
       streamingBot.msg.text += t;
+      // Plain text while streaming (avoids broken half-parsed Markdown).
       streamingBot.el.textContent = streamingBot.msg.text;
       scrollDown();
     },
     onAiDone: () => {
       clearTyping();
-      streamingBot = null;
+      if (streamingBot) {
+        // Re-render the finished answer as Markdown (bold, lists, links).
+        streamingBot.el.innerHTML = renderMarkdown(streamingBot.msg.text);
+        streamingBot = null;
+      }
     },
     onAgentMessage: (text: string, name: string) => {
       clearTyping();

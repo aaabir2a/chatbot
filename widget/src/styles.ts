@@ -81,6 +81,19 @@ export const WIDGET_CSS = `
   background: var(--rc-bg); border: 1px solid var(--rc-border);
   border-bottom-left-radius: 4px;
 }
+
+/* Rendered Markdown inside bot/agent bubbles */
+.rc-md strong { font-weight: 700; color: var(--rc-text); }
+.rc-md em { font-style: italic; }
+.rc-md code {
+  font-family: ui-monospace, Menlo, monospace; font-size: 12.5px;
+  background: var(--rc-surface); border: 1px solid var(--rc-border);
+  border-radius: 4px; padding: 1px 5px;
+}
+.rc-md a { color: var(--rc-primary); text-decoration: underline; }
+.rc-md ul, .rc-md ol { margin: 6px 0; padding-left: 20px; }
+.rc-md li { margin: 2px 0; }
+.rc-bubble.user .rc-md strong, .rc-bubble.user .rc-md a { color: inherit; }
 .rc-bubble.user {
   background: var(--rc-primary); color: var(--rc-on-primary);
   border-bottom-right-radius: 4px;

@@ -225,6 +225,129 @@ While some smaller commercial systems can export power, local Distribution Netwo
 Commercial solar systems are designed for high durability with minimal moving parts, requiring low active maintenance over their 25-to-30-year lifespan. However, to prevent a gradual decrease in efficiency from UV exposure and environmental wear, you should have a licensed electrician conduct comprehensive system inspections every 2 to 3 years to test electrical cabling, check connections, and inspect components for defects; additionally, businesses in high-dust agricultural or manufacturing environments should schedule routine annual panel cleaning to prevent stubborn particulate buildup.
 ## How do we assess if our business's roof is structurally and environmentally suitable for commercial solar panels?
 Before recommending a system size, a professional solar provider will conduct a thorough site assessment that evaluates your building's structural integrity to ensure it can support the additional weight of the mounting rails and panels, analyzes local shading constraints from nearby trees or adjacent structures, and reviews 12 months of actual interval energy data to confirm that your daytime consumption patterns align with solar generation windows.
+
+---
+
+# Products & Brands
+
+## What battery brands does Kratos Energy supply?
+
+Kratos Energy supplies home and commercial battery storage from leading brands:
+**Goodwe, Sungrow, Sigenergy, FoxESS, and ESY**. Battery options range from
+around 10 kWh up to 48 kWh and larger for commercial sites, available as
+all-in-one units or battery-only systems. Kratos Energy helps you pick the right
+battery brand and capacity for your home or business.
+
+_Also asked: battery brands, which batteries do you sell, battery storage options,
+Goodwe, Sungrow, Sigenergy, FoxESS, ESY battery._
+
+## What inverter brands does Kratos Energy install?
+
+Kratos Energy installs hybrid solar inverters from **Goodwe, Sungrow, Sigenergy,
+FoxESS, and ESY**, in both single-phase and three-phase, typically from
+5 kW up to 20 kW. Kratos Energy recommends the best inverter brand and size to
+match your panels and (optional) battery.
+
+_Also asked: inverter brands, which inverter do you use, hybrid inverter,
+Goodwe, Sungrow, Sigenergy, FoxESS, inverter._
+
+## What solar panel brands does Kratos Energy use?
+
+Kratos Energy installs high-quality solar panels such as **Trina (475 W)** and
+**Jinko**, mounted on durable **Cleanergy** or **Mibet** racking and rails. These
+tier-one panels and mounting systems are chosen for long-term reliability in
+Australian conditions.
+
+_Also asked: panel brands, which solar panels, Trina, Jinko, panel make, racking,
+mounting brand._
+
+---
+
+# Pricing (estimates)
+
+> All prices below are **rough estimates only**, in Australian dollars, and vary
+> with brand, size, site, and current rebates. For an accurate figure, request a
+> free tailored quote from Kratos Energy.
+
+## How much does a solar battery cost?
+
+Solar battery prices depend on the brand, capacity (kWh), and available rebates,
+so these are **estimates only**. As a rough guide (installed, after rebates):
+Sofar from around **$1,800–$12,000**, FoxESS around **$3,800–$11,000**, Goodwe
+around **$4,000–$16,000**, Sungrow around **$5,000–$10,500**, and Sigenergy around
+**$6,400–$19,700**, depending on size. For your exact battery price, request a
+quote from Kratos Energy.
+
+_Also asked: battery price, battery cost, how much is a battery, storage price,
+price range, cost of battery._
+
+## How much does a solar inverter cost?
+
+Inverter prices vary by brand and size (kW), so these are **estimates only**
+(including GST). As a rough guide: FoxESS around **$1,300–$2,300**, Sofar around
+**$1,400–$3,700**, Goodwe around **$1,500–$2,600**, Sigenergy around
+**$1,700–$4,600**, ESY around **$2,300–$2,900**, and Sungrow around
+**$2,300–$5,200**. Kratos Energy confirms the exact inverter price in your quote.
+
+_Also asked: inverter price, inverter cost, how much is an inverter, hybrid
+inverter price._
+
+## How much does a full solar system cost?
+
+The price of a complete solar system depends on its size and your rebates, so
+these are **rough estimates only** (after the STC rebate): a **6.6 kW** system
+from around **$3,500**, a **10 kW** system around **$5,500–$6,000**, and a
+**13 kW** system around **$7,000–$7,500**. Adding battery storage is extra. For an
+accurate, tailored price, request a free quote from Kratos Energy.
+
+_Also asked: system price, how much does solar cost, solar system cost, full
+system price, installation price, price estimate, 6.6kw price, 10kw price._
+
+## What solar packages does Kratos Energy offer?
+
+Kratos Energy offers three popular residential solar packages, all using Trina
+475 W or Jinko panels on Cleanergy or Mibet rails. Prices are **estimates only**
+(after the STC rebate, AUD) and depend on your site and current rebates:
+- **6.6 kW package** with a 5 kW inverter — estimated **$3,300–$3,700**.
+- **10 kW package** with an 8–10 kW inverter — estimated **$5,400–$5,800**.
+- **13 kW package** with a 10 kW inverter — estimated **$7,000–$7,400**.
+
+For an exact price tailored to your home, request a free quote from Kratos Energy.
+
+_Also asked: packages, solar packages, plans, deals, system options, which
+package, package price, what packages do you have._
+
+## What is the 6.6 kW solar package and how much does it cost?
+
+The Kratos Energy 6.6 kW solar package includes a 6.6 kW solar panel array (Trina
+475 W or Jinko panels on Cleanergy or Mibet rails) paired with a 5 kW inverter.
+The estimated price after the STC rebate is around **AUD $3,300–$3,700** — an
+estimate only; the final price comes from a tailored quote. The 6.6 kW package is
+the entry-level option and suits most average Australian homes.
+
+_Also asked: 6.6kw package, smallest package, starter package, 6.6 kw price,
+cheapest system, basic package._
+
+## What is the 10 kW solar package and how much does it cost?
+
+The Kratos Energy 10 kW solar package includes a 10 kW solar panel array (Trina
+475 W or Jinko panels on Cleanergy or Mibet rails) with an 8–10 kW inverter. The
+estimated price after the STC rebate is around **AUD $5,400–$5,800** — an estimate
+only; the final price comes from a quote. The 10 kW package suits larger homes or
+households with higher energy use, a pool, or EV charging.
+
+_Also asked: 10kw package, mid package, medium package, 10 kw price._
+
+## What is the 13 kW solar package and how much does it cost?
+
+The Kratos Energy 13 kW solar package includes a 13 kW solar panel array (Trina
+475 W or Jinko panels on Cleanergy or Mibet rails) with a 10 kW inverter. The
+estimated price after the STC rebate is around **AUD $7,000–$7,400** — an estimate
+only; the final price comes from a quote. The 13 kW package is the largest option
+and suits high-consumption homes or those preparing for battery storage and EVs.
+
+_Also asked: 13kw package, largest package, biggest package, 13 kw price, large
+system._
 ## What are the Environmental, Social, and Governance (ESG) benefits of installing commercial solar for my company?
 Adopting commercial solar demonstrates a tangible corporate commitment to environmental sustainability by directly reducing your company's greenhouse gas emissions and carbon footprint. This transition aligns with global ESG reporting criteria, significantly enhances your brand's reputation, and strengthens relationships with environmentally conscious clients, investors, and community stakeholders who value corporate responsibility.
 ## If I have access to free daytime grid power from my retailer, is it better to buy a battery to charge from the grid instead of installing solar panels?
