@@ -16,6 +16,7 @@ export default function ConfigPage() {
     model: bot.model,
     lead_enabled: bot.lead_enabled,
     lead_after_messages: bot.lead_after_messages,
+    sales_phone: bot.sales_phone ?? "",
   });
   const [saving, setSaving] = useState(false);
 
@@ -105,6 +106,16 @@ export default function ConfigPage() {
             />
           </Field>
         )}
+        <Field
+          label="Sales phone"
+          hint="Shown when a visitor asks for a quote/contact, or when the bot has no answer. Leave blank to hide."
+        >
+          <Input
+            value={form.sales_phone ?? ""}
+            onChange={(e) => set("sales_phone", e.target.value)}
+            placeholder="1300 089 547"
+          />
+        </Field>
       </div>
     </Card>
   );

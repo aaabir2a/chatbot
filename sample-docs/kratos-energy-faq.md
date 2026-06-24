@@ -401,3 +401,267 @@ To ensure your solar system remains safe, highly efficient, and structurally sec
 ## Do solar panels naturally clean themselves when it rains, or do I still need to clean them?
 Yes, solar panels that are installed on a standard pitched roof with an angle of 10 degrees or more will naturally "self-clean" as rainwater washes away standard accumulations of dust, pollen, and light debris. However, if your panels are installed completely flat on a flat roof without a tilt frame, rain will pool on the glass and leave muddy marks as it evaporates, requiring manual cleaning or a gentle hose-down to maintain optimal performance.
 
+---
+
+# Customer Q&A — Official Short Answers (Residential)
+
+## How much does a solar system cost for my home?
+
+Solar cost depends on system size, roof type, brands, and rebates. As a rough guide, Kratos Energy residential systems start from around $3,300–$3,700 for 6.6kW, $5,400–$5,800 for 10kW, and $7,000–$7,400 for 13kW. For an exact price, request a free quote.
+
+## Can I get a free solar quote?
+
+Yes. Kratos Energy provides tailored solar quotes based on your property, electricity bill, roof condition, and energy needs. Please share your postcode and latest electricity bill.
+
+## What solar packages do you offer?
+
+Kratos Energy offers three popular residential packages: 6.6kW, 10kW, and 13kW, using Trina 475W or Jinko panels with Cleanergy or Mibet mounting systems.
+
+## How much does the 6.6kW package cost?
+
+The 6.6kW package is estimated around AUD $3,300–$3,700 after STC rebate. Final pricing depends on your site and current rebate conditions.
+
+## How much does the 10kW package cost?
+
+The 10kW package is estimated around AUD $5,400–$5,800 after STC rebate. It suits larger homes, high energy users, pools, or EV charging.
+
+## How much does the 13kW package cost?
+
+The 13kW package is estimated around AUD $7,000–$7,400 after STC rebate. It suits high-consumption homes or customers planning to add battery storage or EV charging.
+
+## Which system size is best for my home?
+
+The right size depends on your daily electricity usage, roof space, shading, and future needs like battery or EV charging. Kratos Energy can recommend the best option after reviewing your electricity bill.
+
+## Is 6.6kW enough for my house?
+
+A 6.6kW system is a common choice for many average Australian homes. Larger homes or higher energy users may benefit from 10kW or 13kW systems.
+
+## How many panels do I need?
+
+It depends on the system size and panel wattage. Kratos Energy uses high-quality panels such as Trina 475W and Jinko, so the number of panels will be calculated after checking your roof and energy needs.
+
+## How much can I save with solar?
+
+Savings depend on your electricity usage, system size, electricity tariff, and how much solar power you use during the day. Most customers see a significant reduction in their monthly electricity bills.
+
+## Is solar still worth it if feed-in tariff is low?
+
+Yes. The main value of solar comes from using your own solar power during the day instead of buying expensive grid electricity, not just from exporting excess energy.
+
+## Can solar reduce my bill to almost zero?
+
+It may significantly reduce your bill, especially if your daytime usage is high. A battery can also help you use stored solar power at night.
+
+## What is the payback period for home solar?
+
+Payback depends on your usage, system size, tariff, and rebates. Kratos Energy can estimate your payback after reviewing your electricity bill and property details.
+
+## Is my roof suitable for solar?
+
+Most roofs are suitable. Suitability depends on roof orientation, angle, shade, available space, and structural condition. Kratos Energy assesses your roof before designing the system.
+
+## Will solar work if my roof has shade?
+
+Shade can reduce solar performance. Depending on the site, options like optimisers or microinverters may help reduce the impact of shaded panels.
+
+## Can I install solar on a flat roof?
+
+Yes, but flat roofs usually need tilt frames. Panels should not be completely flat because dirt and water can build up and reduce performance.
+
+## Do solar panels work on cloudy or rainy days?
+
+Yes. Solar panels still generate electricity on cloudy or rainy days, but output is lower than on sunny days.
+
+## Do solar panels perform worse in extreme heat?
+
+Yes. Solar panels can lose some efficiency as temperature rises. Kratos Energy selects quality products suitable for Australian conditions.
+
+## Are solar panels hail-resistant?
+
+Solar panels installed in Australia are built with strong tempered glass and tested for hail impact. Severe storms can still cause damage, so customers should confirm solar coverage with home insurance.
+
+## How long do solar panels last?
+
+High-quality solar panels usually last 25–30 years or more, with gradual efficiency reduction over time.
+
+## What panel brands do you use?
+
+Kratos Energy installs high-quality panels such as Trina 475W and Jinko, using durable Cleanergy or Mibet racking and rails.
+
+## What inverter brands do you install?
+
+Kratos Energy installs hybrid inverters from brands including Goodwe, Sungrow, Sigenergy, FoxESS, and ESY.
+
+## What battery brands do you supply?
+
+Kratos Energy supplies battery storage from Goodwe, Sungrow, Sigenergy, FoxESS, and ESY, with options for homes and commercial sites.
+
+## Do I need a battery with solar?
+
+A battery is optional. It helps store excess solar power for night use and may provide backup power during outages, depending on system design.
+
+## How much does a solar battery cost?
+
+Battery prices vary by brand and size. As a rough guide, installed battery options can range from around $1,800 to $19,700, depending on brand, capacity, and rebates.
+
+## Can I add a battery later?
+
+Yes. You can choose a hybrid inverter now to prepare for a future battery, or add an AC-coupled battery later to an existing solar system.
+
+## Will a battery power my home during a blackout?
+
+It depends on the battery and inverter setup. For most homes, backing up essential circuits like lights, fridge, internet, and key outlets is more practical than whole-home backup.
+
+## Will solar panels charge my battery during a blackout?
+
+Only if your system is designed with the right hybrid inverter and backup/islanding capability. Kratos Energy can design this based on your needs.
+
+## What happens during a power outage?
+
+Standard grid-connected solar systems shut down during outages for safety. A properly configured battery system can provide backup power.
+
+## Can I monitor my solar system?
+
+Yes. Most modern inverters include monitoring apps. A smart consumption meter can also show household usage, solar generation, and self-consumption.
+
+## What maintenance do solar panels need?
+
+Solar panels need minimal maintenance. Regular cleaning and professional inspections help maintain performance and safety.
+
+## How often should solar be serviced?
+
+Residential solar systems should generally be professionally serviced by a licensed accredited electrician at least once every 2 years.
+
+## Can I clean solar panels myself?
+
+Basic visual checks are fine, but avoid pressure washers, harsh chemicals, or unsafe roof access. For dirty or hard-to-reach panels, use a professional cleaner.
+
+## How long does installation take?
+
+A typical residential installation usually takes 1–3 days, depending on system size and site conditions.
+
+## Will installation be delayed if it rains?
+
+Yes, heavy rain can delay installation because wet roofs are unsafe. Reputable installers usually reschedule without extra weather-related fees.
+
+## Do I need electrical upgrades before solar?
+
+Some homes may need switchboard upgrades, RCDs, wiring checks, or a smart meter before the system can be safely installed and connected.
+
+## What is an NMI and why do you need it?
+
+Your NMI is the unique electricity connection number found on your bill. It is needed for grid connection, export approval, and solar billing setup.
+
+## How do I contact Kratos Energy?
+
+You can call Kratos Energy on 1300 089 547. WhatsApp is also available on the same number.
+
+---
+
+# Customer Q&A — Official Short Answers (Commercial)
+
+## How much does commercial solar cost?
+
+Commercial solar cost depends on system size, electricity usage, roof condition, site requirements, and finance options. Kratos Energy can prepare a tailored proposal after reviewing your electricity bill and site details.
+
+## Can I get a free commercial solar quote?
+
+Yes. Kratos Energy can provide a commercial solar proposal after reviewing your business electricity bill, site location, roof space, and energy usage pattern.
+
+## What size solar system does my business need?
+
+The right system size depends on your daytime electricity usage, roof space, tariff, and export limits. Kratos Energy reviews your energy data before recommending a system.
+
+## How much can my business save with solar?
+
+Commercial solar can significantly reduce electricity costs because many businesses use power during daylight hours. Some businesses may reduce electricity bills by up to 70%, depending on usage and system design.
+
+## What is the ROI for commercial solar?
+
+Commercial solar ROI commonly ranges from around 2 to 4 years, depending on usage, system size, tariff, incentives, and site complexity.
+
+## Do you offer no-upfront-cost commercial solar?
+
+Yes. Kratos Energy offers flexible financing, including Power Purchase Agreements, for eligible commercial customers with no upfront capital investment.
+
+## How does a PPA work?
+
+Under a PPA, Kratos Energy finances, delivers, and manages the solar asset, while the customer benefits from immediate energy cost savings. PPA approval depends on eligibility, terms, and credit assessment.
+
+## Is a credit check required for PPA?
+
+Yes. PPA and no-upfront commercial solar options are subject to project eligibility, commercial terms, and a satisfactory credit assessment.
+
+## Can solar reduce operating costs for my business?
+
+Yes. Solar helps reduce grid electricity purchases, protects against rising energy prices, and improves business cash flow.
+
+## Will installation disrupt my business?
+
+Usually not. A professional commercial installation team can schedule major switchboard or connection work during off-peak hours, weekends, or in planned stages.
+
+## Can you install solar on a warehouse, club, factory, or office?
+
+Yes. Kratos Energy designs and installs commercial rooftop solar systems for different business properties, including clubs, warehouses, offices, and commercial buildings.
+
+## Do you assess our roof before recommending solar?
+
+Yes. A site assessment checks roof structure, available space, shading, safety, and electrical requirements before final system design.
+
+## Can commercial solar export excess power to the grid?
+
+Sometimes, but larger systems may face export limits or zero-export rules from the local network. Kratos Energy designs systems to maximise on-site usage first.
+
+## Do you provide commercial solar monitoring?
+
+Yes. Commercial solar systems can include monitoring to track generation, performance, savings, and system health.
+
+## Do you provide maintenance for commercial systems?
+
+Yes. Kratos Energy provides ongoing Operations & Maintenance support. Commercial systems should also receive periodic professional inspections and cleaning when needed.
+
+## How often should commercial solar be maintained?
+
+Commercial systems are low-maintenance, but professional inspections every 2–3 years are recommended. High-dust or industrial sites may need annual cleaning.
+
+## What are the ESG benefits of commercial solar?
+
+Commercial solar reduces carbon emissions, supports sustainability goals, improves ESG reporting, and strengthens your company's environmental reputation.
+
+## Can solar improve our sustainability profile?
+
+Yes. Installing solar demonstrates a clear commitment to renewable energy, lower emissions, and responsible business operations.
+
+## Can we claim tax benefits on commercial solar?
+
+Commercial solar may qualify for tax incentives or depreciation benefits, depending on current rules and your business eligibility. Please consult your accountant for exact tax advice.
+
+## Do you have commercial project examples?
+
+Yes. Kratos Energy delivered a 99kW system for Mollymook Club NSW and a 337kW system for Mudgee Soldiers Club NSW, both with strong savings and ROI outcomes.
+
+## What were the Mollymook Club project results?
+
+The 99kW Mollymook Club system generated about 142,076 kWh annually, reduced CO₂ by 120 tonnes, saved around AUD $32,500 per year, and achieved about 2.5 years ROI.
+
+## What were the Mudgee Soldiers Club project results?
+
+The 337kW Mudgee Soldiers Club system generated about 483,409 kWh annually, reduced CO₂ by 407.77 tonnes, saved AUD $96,681 per year, and achieved about 3 years ROI.
+
+## Does Kratos Energy only do rooftop solar?
+
+No. Kratos Energy also develops solar farms, microgrids, EPC projects, battery systems, PPAs, and utility-scale solar with BESS.
+
+## Where does Kratos Energy operate?
+
+Kratos Energy operates across Australia, with experience in South Australia, Victoria, and New South Wales, and provides local onsite support nationwide.
+
+## Why should our business choose Kratos Energy?
+
+Kratos Energy offers end-to-end renewable energy solutions, including design, engineering, construction, finance, PPA, installation, and ongoing support.
+
+## How do we start a commercial solar proposal?
+
+Share your business location, latest electricity bill, roof/site details, and preferred finance option. Kratos Energy can then prepare a tailored commercial solar proposal.
+

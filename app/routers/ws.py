@@ -72,6 +72,48 @@ async def _maybe_prompt_lead(key: str, conv_id: str, chatbot_id: str) -> None:
     )
 
 
+async def _prompt_lead_now(key: str, conv_id: str, chatbot_id: str) -> None:
+    """Show the lead form immediately (bypasses the message threshold).
+
+    Used for sales/contact intent and no-answer cases. Still respects
+    lead_enabled and skips if a lead was already captured.
+    """
+    with SessionLocal() as db:
+        conv = db.get(Conversation, conv_id)
+        cb = db.get(Chatbot, chatbot_id)
+        if not cb or not cb.lead_enabled or conv.lead_captured:
+            return
+        conv.lead_prompted = True
+        conv.lead_next_at = None
+        db.commit()
+    await manager.send_to_visitor(
+        key,
+        {
+            "type": "lead_form",
+            "title": "Request a callback",
+            "subtitle": "Leave your details and our sales team will contact you.",
+            "fields": ["name", "phone", "email"],
+        },
+    )
+
+
+async def _send_bot_message(key: str, conv_id: str, chatbot_id: str, text: str) -> None:
+    """Send a canned bot message as its own bubble, persist it, notify agents."""
+    await manager.send_to_visitor(key, {"type": "token", "token": text})
+    await manager.send_to_visitor(key, {"type": "ai_done"})
+    with SessionLocal() as db:
+        conv = db.get(Conversation, conv_id)
+        amsg = crud.add_conversation_message(db, conv, "ai", text)
+        amsg_dict = _msg_dict(amsg)
+        org_id = db.get(Chatbot, chatbot_id).org_id
+        summary = crud.conversation_summary(db, conv)
+    await manager.broadcast_to_org_agents(
+        org_id,
+        {"type": "message", "conversation_id": conv_id, "message": amsg_dict,
+         "conversation": summary},
+    )
+
+
 # ── Visitor WebSocket ───────────────────────────────────────────────────────
 @router.websocket("/ws/chat/{session_id}")
 async def ws_visitor(
@@ -230,6 +272,15 @@ async def _handle_visitor_event(
         await _maybe_prompt_lead(key, conv_id, chatbot_id)
         return
 
+    # Sales / contact intent: skip RAG, give the phone + lead form right away.
+    if rag.is_sales_intent(text):
+        with SessionLocal() as db:
+            cb = db.get(Chatbot, chatbot_id)
+            reply = rag.contact_message(cb)
+        await _send_bot_message(key, conv_id, chatbot_id, reply)
+        await _prompt_lead_now(key, conv_id, chatbot_id)
+        return
+
     # AI mode: stream a RAG answer over the socket.
     with SessionLocal() as db:
         conv = db.get(Conversation, conv_id)
@@ -256,8 +307,16 @@ async def _handle_visitor_event(
          "conversation": summary},
     )
 
-    # After the answer, maybe show the lead-capture form.
-    await _maybe_prompt_lead(key, conv_id, chatbot_id)
+    # No answer found: offer the phone + lead form right away.
+    if usage.get("no_context"):
+        with SessionLocal() as db:
+            cb = db.get(Chatbot, chatbot_id)
+            reply = rag.contact_message(cb)
+        await _send_bot_message(key, conv_id, chatbot_id, reply)
+        await _prompt_lead_now(key, conv_id, chatbot_id)
+    else:
+        # Otherwise, maybe show the lead form after enough messages.
+        await _maybe_prompt_lead(key, conv_id, chatbot_id)
 
 
 # ── Agent WebSocket ─────────────────────────────────────────────────────────

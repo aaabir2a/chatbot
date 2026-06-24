@@ -30,6 +30,41 @@ def small_talk_reply(chatbot: Chatbot) -> str:
     """Friendly canned reply for greetings (no LLM, no retrieval — instant)."""
     return chatbot.welcome_message or "Hi! How can I help you today?"
 
+
+# Sales / contact intent: route straight to phone + lead form.
+_SALES_INTENT_RE = re.compile(
+    r"\b("
+    r"free\s+quote|get\s+a\s+quote|quote\b|quotation|"
+    r"contact|get\s+in\s+touch|reach\s+(you|your\s+team|the\s+team)|"
+    r"phone(\s+number)?|whats\s?app|"
+    r"call\s+(me|you|us|back|the\s+team)|call\s?back|"
+    r"sales(\s+(team|person|rep|agent))?|"
+    r"talk\s+to\s+(someone|a\s+person|sales|a\s+human|an?\s+agent|your\s+team)|"
+    r"speak\s+(to|with)\s+(someone|sales|a\s+human|your\s+team)|"
+    r"enquir|inquir|book\s+(a\s+)?(call|consult|appointment)"
+    r")\b",
+    re.IGNORECASE,
+)
+
+
+def is_sales_intent(message: str) -> bool:
+    return bool(_SALES_INTENT_RE.search(message or ""))
+
+
+def contact_message(chatbot: Chatbot) -> str:
+    """Phone (if configured) + invitation to leave details for a callback."""
+    phone = (chatbot.sales_phone or "").strip()
+    if phone:
+        return (
+            f"You can reach our team on **{phone}** (WhatsApp available on the "
+            "same number). Leave your details below and our sales team will "
+            "contact you shortly."
+        )
+    return (
+        "Leave your details below and our sales team will get in touch with you "
+        "shortly."
+    )
+
 BASE_INSTRUCTIONS = (
     "Answer using ONLY the information in the CONTEXT below.\n"
     "- Be concise, clear, and professional. Get straight to the answer.\n"
@@ -161,7 +196,9 @@ async def stream_rag(
     relevant = [c for c in chunks if c["score"] >= settings.score_threshold]
 
     if not relevant:
-        usage_out.update(prompt_tokens=0, completion_tokens=0, total_tokens=0)
+        usage_out.update(
+            prompt_tokens=0, completion_tokens=0, total_tokens=0, no_context=True
+        )
         yield NO_CONTEXT_REPLY
         return
 

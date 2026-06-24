@@ -65,6 +65,9 @@ class Chatbot(Base):
     # Lead capture: show a name+phone form after N visitor messages.
     lead_enabled: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     lead_after_messages: Mapped[int] = mapped_column(Integer, default=3, nullable=False)
+    # Sales phone shown when a visitor asks to contact / get a quote, or when
+    # the bot has no answer. Optional.
+    sales_phone: Mapped[str | None] = mapped_column(String(64), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
 
     organization: Mapped["Organization"] = relationship(back_populates="chatbots")

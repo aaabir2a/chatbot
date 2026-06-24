@@ -23,6 +23,7 @@ export interface Chatbot {
   model: string;
   lead_enabled: boolean;
   lead_after_messages: number;
+  sales_phone: string | null;
   created_at: string;
 }
 
@@ -34,6 +35,7 @@ export interface ChatbotInput {
   model?: string;
   lead_enabled?: boolean;
   lead_after_messages?: number;
+  sales_phone?: string;
 }
 
 export interface Lead {

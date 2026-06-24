@@ -39,6 +39,7 @@ class ChatbotCreate(BaseModel):
     model: str | None = Field(default=None, max_length=255)
     lead_enabled: bool | None = None
     lead_after_messages: int | None = Field(default=None, ge=1, le=20)
+    sales_phone: str | None = Field(default=None, max_length=64)
 
 
 class ChatbotUpdate(BaseModel):
@@ -49,6 +50,7 @@ class ChatbotUpdate(BaseModel):
     model: str | None = Field(default=None, max_length=255)
     lead_enabled: bool | None = None
     lead_after_messages: int | None = Field(default=None, ge=1, le=20)
+    sales_phone: str | None = Field(default=None, max_length=64)
 
 
 class ChatbotInfo(BaseModel):
@@ -62,6 +64,7 @@ class ChatbotInfo(BaseModel):
     model: str
     lead_enabled: bool
     lead_after_messages: int
+    sales_phone: str | None = None
     created_at: datetime
 
 
