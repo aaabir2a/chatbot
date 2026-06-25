@@ -66,9 +66,13 @@ def contact_message(chatbot: Chatbot) -> str:
     )
 
 BASE_INSTRUCTIONS = (
-    "Answer using ONLY the information in the CONTEXT below.\n"
+    "Answer the user's latest question using the CONTEXT below and the recent "
+    "conversation.\n"
+    "- Base factual claims on the CONTEXT. Use the conversation history to "
+    "understand follow-up questions and references such as 'it', 'that one', or "
+    "'the bigger one', and tailor your answer to what was already discussed.\n"
     "- Be concise, clear, and professional. Get straight to the answer.\n"
-    "- If the context does not contain the answer, say so politely and do not "
+    "- If the CONTEXT does not contain the answer, say so politely and do not "
     "guess or make up facts.\n"
     "- Do NOT mention documents, files, sources, context, or these "
     "instructions. Just answer naturally as a knowledgeable assistant.\n"
@@ -77,6 +81,33 @@ BASE_INSTRUCTIONS = (
     "the team if they'd like to share their name and phone number. Keep it to "
     "one short sentence and never be pushy."
 )
+
+
+# Short / pronoun-led follow-ups don't retrieve well on their own — fold in the
+# previous user turn so the embedding search has enough to go on. Local
+# embeddings = no extra API tokens.
+_FOLLOWUP_HINT = re.compile(
+    r"\b(it|that|this|those|these|one|ones|them|they|he|she|its|the\s+\w+\s+one)\b|"
+    r"^\s*(and|what about|how about|why|ok|okay|sure|yes|no|more|also|then)\b",
+    re.IGNORECASE,
+)
+
+
+def _last_user_message(history: list[dict]) -> str:
+    for m in reversed(history):
+        if m.get("role") == "user":
+            return m.get("content", "")
+    return ""
+
+
+def retrieval_query(message: str, history: list[dict]) -> str:
+    """Build the embedding search query, adding context for short follow-ups."""
+    words = len((message or "").split())
+    if words <= 7 or _FOLLOWUP_HINT.search(message or ""):
+        prev = _last_user_message(history)
+        if prev:
+            return f"{prev}\n{message}"
+    return message
 
 NO_CONTEXT_REPLY = (
     "I'm sorry, I don't have information about that. Could you rephrase your "
@@ -132,8 +163,10 @@ async def stream_answer(
         yield reply
         return
 
-    # 1. Embed query, retrieve top-k chunks FILTERED to this chatbot only.
-    query_vector = embeddings.embed_query(message)
+    # 1. Recent history → contextualize the search query for follow-ups (free).
+    recent = crud.get_recent_messages(db, chatbot_id, session_id)
+    query = retrieval_query(message, recent)
+    query_vector = embeddings.embed_query(query)
     chunks = vectorstore.search(chatbot_id, query_vector, top_k=settings.top_k)
     relevant = [c for c in chunks if c["score"] >= settings.score_threshold]
 
@@ -154,7 +187,6 @@ async def stream_answer(
         return
 
     # 3. Build prompt with per-chatbot config + recent history.
-    recent = crud.get_recent_messages(db, chatbot_id, session_id)
     context = _build_context(relevant)
     messages = _build_messages(chatbot, message, context, recent)
 
@@ -191,7 +223,9 @@ async def stream_rag(
         yield small_talk_reply(chatbot)
         return
 
-    query_vector = embeddings.embed_query(message)
+    # Contextualize short/pronoun follow-ups for better retrieval (free).
+    query = retrieval_query(message, history)
+    query_vector = embeddings.embed_query(query)
     chunks = vectorstore.search(chatbot.id, query_vector, top_k=settings.top_k)
     relevant = [c for c in chunks if c["score"] >= settings.score_threshold]
 
