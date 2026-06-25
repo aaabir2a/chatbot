@@ -89,7 +89,7 @@ export function createChatWidget(opts: ChatWidgetOptions): ChatWidgetInstance {
       <textarea class="rc-input" rows="1"></textarea>
       <button type="submit" class="rc-send" aria-label="Send">➤</button>
     </form>
-    <div class="rc-footer">Powered by RAG Console</div>
+    <div class="rc-footer">Powered by FireWorks LTD.</div>
   `;
   root.appendChild(panel);
 
@@ -250,7 +250,7 @@ export function createChatWidget(opts: ChatWidgetOptions): ChatWidgetInstance {
 
   // ── Socket ──
   const buildHandlers = () => ({
-    onStatus: () => {},
+    onStatus: () => { },
     onHistory: (wire: WireMessage[], m: string, name?: string | null) => {
       messages = wire.map((w) => ({
         role: ROLE_OF[w.sender] || "bot",
