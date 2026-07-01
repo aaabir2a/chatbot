@@ -42,6 +42,29 @@ class Organization(Base):
     )
 
 
+class CrmKey(Base):
+    """Org-scoped read API key for external CRM integrations (no login).
+
+    Grants read access to the org's conversations, messages, and leads via the
+    /crm/* endpoints. Plaintext is shown once; only the SHA-256 hash is stored.
+    """
+
+    __tablename__ = "crm_keys"
+
+    id: Mapped[str] = mapped_column(String(32), primary_key=True, default=_uuid)
+    org_id: Mapped[str] = mapped_column(
+        ForeignKey("organizations.id", ondelete="CASCADE"), index=True
+    )
+    name: Mapped[str] = mapped_column(String(255), default="default")
+    prefix: Mapped[str] = mapped_column(String(20), index=True)
+    key_hash: Mapped[str] = mapped_column(String(64), unique=True, index=True)
+    revoked: Mapped[bool] = mapped_column(Boolean, default=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+    last_used_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+
+
 class Chatbot(Base):
     __tablename__ = "chatbots"
 

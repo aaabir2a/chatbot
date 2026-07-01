@@ -23,6 +23,9 @@ export function AppLayout() {
           <NavLink to="/leads" className="side-link">
             <span className="side-ico">☎</span> Leads
           </NavLink>
+          <NavLink to="/integrations" className="side-link">
+            <span className="side-ico">⇄</span> Integrations
+          </NavLink>
         </nav>
         <div className="side-foot">
           <div className="org-chip">

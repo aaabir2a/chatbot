@@ -128,6 +128,30 @@ class DeleteResponse(BaseModel):
     deleted_chunks: int
 
 
+# ── CRM integration keys ─────────────────────────────────────────────────────
+class CrmKeyCreate(BaseModel):
+    name: str = Field(default="default", max_length=255)
+
+
+class CrmKeyCreated(BaseModel):
+    id: str
+    org_id: str
+    name: str
+    prefix: str
+    api_key: str  # plaintext, shown only once
+    created_at: datetime
+
+
+class CrmKeyInfo(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: str
+    name: str
+    prefix: str
+    revoked: bool
+    created_at: datetime
+    last_used_at: datetime | None
+
+
 # ── Leads ────────────────────────────────────────────────────────────────────
 class LeadInfo(BaseModel):
     model_config = ConfigDict(from_attributes=True)

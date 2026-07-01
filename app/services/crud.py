@@ -223,6 +223,81 @@ def create_lead(
     return lead
 
 
+def _conv_row_to_dict(db: Session, conv: Conversation, chatbot_name: str) -> dict:
+    last = (
+        db.query(Message)
+        .filter(Message.conversation_id == conv.id)
+        .order_by(Message.id.desc())
+        .first()
+    )
+    msg_count = (
+        db.query(func.count(Message.id))
+        .filter(Message.conversation_id == conv.id)
+        .scalar()
+    )
+    return {
+        "id": conv.id,
+        "chatbot_id": conv.chatbot_id,
+        "chatbot_name": chatbot_name,
+        "session_id": conv.session_id,
+        "mode": conv.mode,
+        "waiting_for_human": conv.waiting_for_human,
+        "assigned_agent_name": conv.assigned_agent_name,
+        "lead_captured": conv.lead_captured,
+        "message_count": int(msg_count or 0),
+        "last_message": last.content[:200] if last else "",
+        "last_sender": last.sender if last else None,
+        "last_message_at": conv.last_message_at.isoformat() if conv.last_message_at else None,
+        "created_at": conv.created_at.isoformat() if conv.created_at else None,
+    }
+
+
+def crm_list_conversations(
+    db: Session,
+    org_id: str,
+    chatbot_id: str | None = None,
+    since: datetime | None = None,
+    limit: int = 50,
+    offset: int = 0,
+) -> list[dict]:
+    q = (
+        db.query(Conversation, Chatbot.name)
+        .join(Chatbot, Conversation.chatbot_id == Chatbot.id)
+        .filter(Chatbot.org_id == org_id)
+    )
+    if chatbot_id:
+        q = q.filter(Conversation.chatbot_id == chatbot_id)
+    if since:
+        q = q.filter(Conversation.last_message_at >= since)
+    rows = (
+        q.order_by(Conversation.last_message_at.desc()).offset(offset).limit(limit).all()
+    )
+    return [_conv_row_to_dict(db, conv, name) for conv, name in rows]
+
+
+def crm_list_leads(
+    db: Session,
+    org_id: str,
+    chatbot_id: str | None = None,
+    status: str | None = None,
+    since: datetime | None = None,
+    limit: int = 50,
+    offset: int = 0,
+) -> list:
+    q = (
+        db.query(Lead)
+        .join(Chatbot, Lead.chatbot_id == Chatbot.id)
+        .filter(Chatbot.org_id == org_id)
+    )
+    if chatbot_id:
+        q = q.filter(Lead.chatbot_id == chatbot_id)
+    if status:
+        q = q.filter(Lead.status == status)
+    if since:
+        q = q.filter(Lead.created_at >= since)
+    return q.order_by(Lead.created_at.desc()).offset(offset).limit(limit).all()
+
+
 def conversation_summary(db: Session, conv: Conversation) -> dict:
     chatbot = db.get(Chatbot, conv.chatbot_id)
     last = (

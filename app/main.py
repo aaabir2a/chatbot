@@ -11,7 +11,7 @@ from slowapi.errors import RateLimitExceeded
 
 from app.config import settings
 from app.db.base import Base, engine
-from app.routers import auth, chat, conversations, documents, ingest, manage, ws
+from app.routers import auth, chat, conversations, crm, documents, ingest, manage, ws
 from app.services import embeddings, vectorstore
 from app.services.ratelimit import limiter
 
@@ -59,6 +59,7 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.include_router(auth.router)          # /auth/* (JWT)
 app.include_router(manage.router)        # dashboard management (JWT, org-scoped)
 app.include_router(conversations.router) # /conversations (JWT, live chats inbox)
+app.include_router(crm.router)           # /crm/* (X-CRM-Key, external integration)
 app.include_router(ws.router)            # /ws/chat/{session}, /ws/agent (WebSocket)
 app.include_router(ingest.router)        # /ingest (API key)
 app.include_router(chat.router)          # /chat (API key)

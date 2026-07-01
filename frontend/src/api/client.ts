@@ -6,6 +6,8 @@ import {
   type ChatbotInput,
   type Conversation,
   type ConvMessage,
+  type CrmKeyCreated,
+  type CrmKeyInfo,
   type Lead,
   type DocumentList,
   type DocumentInfo,
@@ -142,6 +144,13 @@ export const api = {
     request<{ conversation: Conversation; messages: ConvMessage[] }>(
       `/conversations/${id}/messages`,
     ),
+
+  // ── CRM integration keys ──
+  listCrmKeys: () => request<CrmKeyInfo[]>("/crm-keys"),
+  createCrmKey: (name: string) =>
+    request<CrmKeyCreated>("/crm-keys", { method: "POST", body: { name } }),
+  revokeCrmKey: (id: string) =>
+    request<{ id: string; revoked: boolean }>(`/crm-keys/${id}`, { method: "DELETE" }),
 };
 
 /** WebSocket URL for the agent dashboard (JWT in query param). */

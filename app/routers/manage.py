@@ -19,7 +19,7 @@ from sqlalchemy.orm import Session
 from sse_starlette.sse import EventSourceResponse
 
 from app.db.base import get_db
-from app.db.models import ApiKey, ChatLog, Chatbot, Document, Lead, Organization
+from app.db.models import ApiKey, ChatLog, Chatbot, CrmKey, Document, Lead, Organization
 from app.schemas import (
     ApiKeyCreate,
     ApiKeyCreated,
@@ -28,6 +28,9 @@ from app.schemas import (
     ChatbotInfo,
     ChatbotUpdate,
     ChatRequest,
+    CrmKeyCreate,
+    CrmKeyCreated,
+    CrmKeyInfo,
     DocumentInfo,
     DocumentList,
     IngestResponse,
@@ -277,6 +280,54 @@ def usage(
             for r in recent_rows
         ],
     )
+
+
+# ── CRM integration keys (org-scoped, read access to all conversations/leads) ─
+@router.get("/crm-keys", response_model=list[CrmKeyInfo])
+def list_crm_keys(
+    org: Organization = Depends(require_org), db: Session = Depends(get_db)
+) -> list[CrmKey]:
+    return (
+        db.query(CrmKey)
+        .filter(CrmKey.org_id == org.id)
+        .order_by(CrmKey.created_at.desc())
+        .all()
+    )
+
+
+@router.post("/crm-keys", response_model=CrmKeyCreated, status_code=201)
+def create_crm_key(
+    body: CrmKeyCreate,
+    org: Organization = Depends(require_org),
+    db: Session = Depends(get_db),
+) -> CrmKeyCreated:
+    full_key, prefix, key_hash = generate_api_key(kind="crm")
+    crm_key = CrmKey(org_id=org.id, name=body.name, prefix=prefix, key_hash=key_hash)
+    db.add(crm_key)
+    db.commit()
+    db.refresh(crm_key)
+    return CrmKeyCreated(
+        id=crm_key.id,
+        org_id=org.id,
+        name=crm_key.name,
+        prefix=prefix,
+        api_key=full_key,  # shown once
+        created_at=crm_key.created_at,
+    )
+
+
+@router.delete("/crm-keys/{key_id}")
+def revoke_crm_key(
+    key_id: str,
+    org: Organization = Depends(require_org),
+    db: Session = Depends(get_db),
+) -> dict:
+    crm_key = db.get(CrmKey, key_id)
+    if crm_key is None or crm_key.org_id != org.id:
+        raise HTTPException(status_code=404, detail="CRM key not found.")
+    crm_key.revoked = True
+    db.commit()
+    return {"id": key_id, "revoked": True}
 
 
 # ── Leads ───────────────────────────────────────────────────────────────────
