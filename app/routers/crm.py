@@ -11,7 +11,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from app.db.base import get_db
-from app.db.models import Chatbot, Conversation, Organization
+from app.db.models import Chatbot, Conversation, Lead, Organization
+from app.schemas import LeadStatusUpdate
 from app.services import crud
 from app.services.auth import require_crm_key
 
@@ -119,3 +120,20 @@ def crm_leads(
         "limit": limit,
         "offset": offset,
     }
+
+
+@router.patch("/leads/{lead_id}")
+def crm_update_lead(
+    lead_id: str,
+    body: LeadStatusUpdate,
+    org: Organization = Depends(require_crm_key),
+    db: Session = Depends(get_db),
+) -> dict:
+    """Write-back: let the CRM mark a lead new|contacted."""
+    lead = db.get(Lead, lead_id)
+    cb = db.get(Chatbot, lead.chatbot_id) if lead else None
+    if lead is None or cb is None or cb.org_id != org.id:  # tenant isolation
+        raise HTTPException(status_code=404, detail="Lead not found.")
+    lead.status = body.status
+    db.commit()
+    return {"id": lead.id, "status": lead.status}
