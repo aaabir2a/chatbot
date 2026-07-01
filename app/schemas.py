@@ -152,6 +152,18 @@ class CrmKeyInfo(BaseModel):
     last_used_at: datetime | None
 
 
+# ── Webhooks ─────────────────────────────────────────────────────────────────
+class WebhookConfig(BaseModel):
+    url: str | None = None
+    enabled: bool = False
+    secret: str | None = None  # shown to the org admin to configure their CRM
+
+
+class WebhookUpdate(BaseModel):
+    url: str | None = Field(default=None, max_length=1024)
+    enabled: bool | None = None
+
+
 # ── Leads ────────────────────────────────────────────────────────────────────
 class LeadInfo(BaseModel):
     model_config = ConfigDict(from_attributes=True)

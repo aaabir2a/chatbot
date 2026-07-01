@@ -6,7 +6,7 @@ from fastapi import APIRouter, Query, WebSocket, WebSocketDisconnect
 
 from app.db.base import SessionLocal
 from app.db.models import Chatbot, Conversation
-from app.services import crud, rag
+from app.services import crud, rag, webhooks
 from app.services.auth import hash_key
 from app.services.security import decode_access_token
 from app.services.ws_manager import manager, visitor_key
@@ -230,6 +230,20 @@ async def _handle_visitor_event(
              "lead": {"id": lead_id, "name": name, "phone": phone,
                       "email": email or None},
              "conversation": summary, "message": sys_dict},
+        )
+        # Push to the org's CRM webhook (if configured).
+        webhooks.schedule(
+            org_id,
+            "lead.created",
+            {
+                "id": lead_id,
+                "chatbot_id": chatbot_id,
+                "conversation_id": conv_id,
+                "name": name,
+                "phone": phone,
+                "email": email or None,
+                "status": "new",
+            },
         )
         return
 

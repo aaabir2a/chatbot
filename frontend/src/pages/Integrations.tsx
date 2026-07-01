@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
 import { api, apiBaseUrl } from "../api/client";
-import { ApiError, type CrmKeyCreated, type CrmKeyInfo } from "../api/types";
+import {
+  ApiError,
+  type CrmKeyCreated,
+  type CrmKeyInfo,
+  type WebhookConfig,
+} from "../api/types";
 import { PageHeader } from "../components/Layout";
 import { useToast } from "../components/Toast";
 import {
@@ -29,6 +34,13 @@ export default function Integrations() {
   const [toRevoke, setToRevoke] = useState<CrmKeyInfo | null>(null);
   const [revoking, setRevoking] = useState(false);
 
+  // Webhook state
+  const [hook, setHook] = useState<WebhookConfig | null>(null);
+  const [hookUrl, setHookUrl] = useState("");
+  const [hookEnabled, setHookEnabled] = useState(false);
+  const [savingHook, setSavingHook] = useState(false);
+  const [testingHook, setTestingHook] = useState(false);
+
   const load = () => {
     setLoading(true);
     api
@@ -36,8 +48,57 @@ export default function Integrations() {
       .then(setKeys)
       .catch((e) => setError(e instanceof ApiError ? e.message : "Failed to load"))
       .finally(() => setLoading(false));
+    api
+      .getWebhook()
+      .then((w) => {
+        setHook(w);
+        setHookUrl(w.url ?? "");
+        setHookEnabled(w.enabled);
+      })
+      .catch(() => {});
   };
   useEffect(load, []);
+
+  const saveHook = async () => {
+    if (hookEnabled && !/^https?:\/\//.test(hookUrl.trim())) {
+      toast.error("Enter a valid http(s):// URL");
+      return;
+    }
+    setSavingHook(true);
+    try {
+      const w = await api.setWebhook(hookUrl.trim(), hookEnabled);
+      setHook(w);
+      toast.success("Webhook saved");
+    } catch (e) {
+      toast.error(e instanceof ApiError ? e.message : "Save failed");
+    } finally {
+      setSavingHook(false);
+    }
+  };
+
+  const testHook = async () => {
+    setTestingHook(true);
+    try {
+      const r = await api.testWebhook();
+      r.delivered
+        ? toast.success("Test event delivered ✓")
+        : toast.error("Delivery failed — check the URL");
+    } catch (e) {
+      toast.error(e instanceof ApiError ? e.message : "Test failed");
+    } finally {
+      setTestingHook(false);
+    }
+  };
+
+  const rotateHook = async () => {
+    try {
+      const w = await api.rotateWebhookSecret();
+      setHook(w);
+      toast.success("Secret rotated");
+    } catch (e) {
+      toast.error(e instanceof ApiError ? e.message : "Rotate failed");
+    }
+  };
 
   const create = async () => {
     setCreating(true);
@@ -179,6 +240,60 @@ export default function Integrations() {
           >
             Copy
           </Button>
+        </div>
+      </Card>
+
+      <Card title="Webhook (push new leads in real time)">
+        <p className="muted" style={{ marginTop: 0 }}>
+          Instead of polling, we can POST each new lead to your CRM the instant
+          it's captured. Payload is JSON, signed with HMAC-SHA256 in the
+          <code> X-Webhook-Signature</code> header.
+        </p>
+        <label className="lead-toggle">
+          <input
+            type="checkbox"
+            checked={hookEnabled}
+            onChange={(e) => setHookEnabled(e.target.checked)}
+          />
+          <span>
+            <strong>Enable webhook</strong> — push <code>lead.created</code> events
+            to your endpoint.
+          </span>
+        </label>
+        <Field label="Endpoint URL" hint="Your CRM's HTTPS endpoint that receives the POST.">
+          <Input
+            value={hookUrl}
+            onChange={(e) => setHookUrl(e.target.value)}
+            placeholder="https://your-crm.com/webhooks/chatbot"
+          />
+        </Field>
+        {hook?.secret && (
+          <Field label="Signing secret" hint="Give this to your CRM developer to verify signatures.">
+            <div className="key-reveal">
+              <code>{hook.secret}</code>
+              <Button variant="secondary" onClick={() => copy(hook.secret!)}>
+                Copy
+              </Button>
+            </div>
+          </Field>
+        )}
+        <div className="page-actions" style={{ marginTop: 12 }}>
+          <Button onClick={saveHook} loading={savingHook}>
+            Save
+          </Button>
+          <Button
+            variant="secondary"
+            onClick={testHook}
+            loading={testingHook}
+            disabled={!hook?.enabled}
+          >
+            Send test event
+          </Button>
+          {hook?.secret && (
+            <Button variant="ghost" onClick={rotateHook}>
+              Rotate secret
+            </Button>
+          )}
         </div>
       </Card>
 

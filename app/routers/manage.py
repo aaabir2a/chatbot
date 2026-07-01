@@ -38,8 +38,10 @@ from app.schemas import (
     LeadStatusUpdate,
     RecentConversation,
     UsageResponse,
+    WebhookConfig,
+    WebhookUpdate,
 )
-from app.services import rag, vectorstore
+from app.services import rag, vectorstore, webhooks
 from app.services.auth import generate_api_key, owned_chatbot, require_org
 from app.services.ingestion import run_ingestion_background
 
@@ -328,6 +330,58 @@ def revoke_crm_key(
     crm_key.revoked = True
     db.commit()
     return {"id": key_id, "revoked": True}
+
+
+# ── Webhook (push new leads to the org's CRM) ────────────────────────────────
+def _webhook_config(org: Organization) -> WebhookConfig:
+    return WebhookConfig(
+        url=org.webhook_url, enabled=org.webhook_enabled, secret=org.webhook_secret
+    )
+
+
+@router.get("/webhook", response_model=WebhookConfig)
+def get_webhook(
+    org: Organization = Depends(require_org), db: Session = Depends(get_db)
+) -> WebhookConfig:
+    return _webhook_config(db.get(Organization, org.id))
+
+
+@router.put("/webhook", response_model=WebhookConfig)
+def set_webhook(
+    body: WebhookUpdate,
+    org: Organization = Depends(require_org),
+    db: Session = Depends(get_db),
+) -> WebhookConfig:
+    o = db.get(Organization, org.id)
+    if body.url is not None:
+        url = body.url.strip()
+        if url and not url.startswith(("http://", "https://")):
+            raise HTTPException(status_code=400, detail="URL must start with http(s)://")
+        o.webhook_url = url or None
+    if body.enabled is not None:
+        o.webhook_enabled = body.enabled
+    if not o.webhook_secret:  # generate a signing secret on first setup
+        o.webhook_secret = webhooks.generate_secret()
+    db.commit()
+    db.refresh(o)
+    return _webhook_config(o)
+
+
+@router.post("/webhook/rotate-secret", response_model=WebhookConfig)
+def rotate_webhook_secret(
+    org: Organization = Depends(require_org), db: Session = Depends(get_db)
+) -> WebhookConfig:
+    o = db.get(Organization, org.id)
+    o.webhook_secret = webhooks.generate_secret()
+    db.commit()
+    db.refresh(o)
+    return _webhook_config(o)
+
+
+@router.post("/webhook/test")
+async def test_webhook(org: Organization = Depends(require_org)) -> dict:
+    ok = await webhooks.deliver_test(org.id)
+    return {"delivered": ok}
 
 
 # ── Leads ───────────────────────────────────────────────────────────────────

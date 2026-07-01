@@ -35,6 +35,10 @@ class Organization(Base):
         String(320), unique=True, index=True, nullable=True
     )
     password_hash: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    # Outbound webhook: push events (e.g. new lead) to the org's CRM.
+    webhook_url: Mapped[str | None] = mapped_column(String(1024), nullable=True)
+    webhook_secret: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    webhook_enabled: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
 
     chatbots: Mapped[list["Chatbot"]] = relationship(

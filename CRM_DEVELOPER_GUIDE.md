@@ -203,7 +203,83 @@ curl -H "X-CRM-Key: crm_xxx" \
 
 ---
 
-## 7. Notes
+## 7. Webhooks (real-time push) — optional, recommended for leads
+
+Instead of (or alongside) polling `/crm/leads`, we can **POST each new lead to
+your endpoint the instant it's captured**. This is the reverse direction of the
+API: *we* call *you*.
+
+### Setup (one-time)
+1. You build an HTTPS endpoint that accepts `POST` with a JSON body.
+2. The client enters that URL in the dashboard → Integrations → Webhook, enables
+   it, and gives you the **signing secret** (`whsec_…`).
+3. Optionally the client clicks **Send test event** — you should receive a
+   `ping`.
+
+### Request we send
+- Method: `POST`, `Content-Type: application/json`
+- Headers:
+  - `X-Webhook-Event: lead.created` (or `ping`)
+  - `X-Webhook-Signature: sha256=<hmac>`
+- Body:
+```json
+{
+  "event": "lead.created",
+  "created_at": "2026-06-15T09:00:00+00:00",
+  "data": {
+    "id": "…",
+    "chatbot_id": "…",
+    "conversation_id": "…",
+    "name": "Jane Doe",
+    "phone": "1300089547",
+    "email": "jane@example.com",
+    "status": "new"
+  }
+}
+```
+
+### Verify the signature (IMPORTANT — do this before trusting the payload)
+The signature is `sha256=` + HMAC-SHA256 of the **raw request body** using the
+signing secret. Compare with a constant-time check.
+
+**Python (FastAPI/Flask):**
+```python
+import hmac, hashlib
+
+def verify(raw_body: bytes, header_sig: str, secret: str) -> bool:
+    expected = "sha256=" + hmac.new(secret.encode(), raw_body, hashlib.sha256).hexdigest()
+    return hmac.compare_digest(expected, header_sig or "")
+```
+
+**Node (Express):**
+```js
+const crypto = require("crypto");
+function verify(rawBody, headerSig, secret) {
+  const expected = "sha256=" + crypto.createHmac("sha256", secret).update(rawBody).digest("hex");
+  return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(headerSig || ""));
+}
+// use express.raw({type: "application/json"}) so you get the exact bytes
+```
+Reject with `401` if it doesn't match. Never process an unverified payload.
+
+### How you should respond
+- Return **HTTP 2xx quickly** (do heavy work async). Any non-2xx or timeout is a
+  failure.
+- On failure we **retry up to 3 times** (after 0s, 3s, 10s). If all fail, the
+  event is dropped — so **also run the polling sync** (§4) as a safety net to
+  catch anything missed while your endpoint was down.
+- **Idempotency**: dedupe on `data.id` — a retried delivery has the same id.
+
+### Events
+- `lead.created` — a visitor submitted the callback form.
+- `ping` — sent by the dashboard "Send test event" button.
+
+> Webhooks are for **real-time new leads**. Use the **REST API** for history,
+> transcripts, backfill, and recovery — they complement each other.
+
+---
+
+## 8. Notes
 
 - **Scope**: this CRM key can only read data + set lead status. It cannot chat,
   ingest documents, or change chatbot settings. A separate widget key (`sk_…`)

@@ -9,6 +9,7 @@ import {
   type CrmKeyCreated,
   type CrmKeyInfo,
   type Lead,
+  type WebhookConfig,
   type DocumentList,
   type DocumentInfo,
   type Org,
@@ -151,6 +152,14 @@ export const api = {
     request<CrmKeyCreated>("/crm-keys", { method: "POST", body: { name } }),
   revokeCrmKey: (id: string) =>
     request<{ id: string; revoked: boolean }>(`/crm-keys/${id}`, { method: "DELETE" }),
+
+  // ── Webhook ──
+  getWebhook: () => request<WebhookConfig>("/webhook"),
+  setWebhook: (url: string, enabled: boolean) =>
+    request<WebhookConfig>("/webhook", { method: "PUT", body: { url, enabled } }),
+  rotateWebhookSecret: () =>
+    request<WebhookConfig>("/webhook/rotate-secret", { method: "POST" }),
+  testWebhook: () => request<{ delivered: boolean }>("/webhook/test", { method: "POST" }),
 };
 
 /** WebSocket URL for the agent dashboard (JWT in query param). */

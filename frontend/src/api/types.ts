@@ -137,6 +137,12 @@ export interface CrmKeyCreated extends CrmKeyInfo {
   api_key: string; // plaintext, once
 }
 
+export interface WebhookConfig {
+  url: string | null;
+  enabled: boolean;
+  secret: string | null;
+}
+
 export class ApiError extends Error {
   status: number;
   constructor(status: number, message: string) {
