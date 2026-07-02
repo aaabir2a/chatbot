@@ -8,7 +8,26 @@ import { Badge, Button, EmptyState, Spinner } from "../components/ui";
 function relTime(iso: string | null): string {
   if (!iso) return "";
   const d = new Date(iso);
-  return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  const time = d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  const today = new Date();
+  const sameDay =
+    d.getFullYear() === today.getFullYear() &&
+    d.getMonth() === today.getMonth() &&
+    d.getDate() === today.getDate();
+  // Today → just the time; older → date + time.
+  if (sameDay) return time;
+  return `${d.toLocaleDateString([], { day: "2-digit", month: "short" })}, ${time}`;
+}
+
+function msgTime(iso: string | null): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  return d.toLocaleString([], {
+    day: "2-digit",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 export default function LiveChats() {
@@ -235,6 +254,7 @@ export default function LiveChats() {
                               : m.sender === "ai"
                                 ? "AI"
                                 : m.agent_name || "Agent"}
+                            <span className="agent-bubble-time">{msgTime(m.created_at)}</span>
                           </div>
                           {m.content}
                         </div>
