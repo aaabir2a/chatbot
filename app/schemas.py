@@ -152,6 +152,16 @@ class CrmKeyInfo(BaseModel):
     last_used_at: datetime | None
 
 
+# ── CRM live-agent actions ───────────────────────────────────────────────────
+class CrmTakeover(BaseModel):
+    agent_name: str = Field(..., min_length=1, max_length=255)
+
+
+class CrmAgentMessage(BaseModel):
+    text: str = Field(..., min_length=1, max_length=8000)
+    agent_name: str = Field(..., min_length=1, max_length=255)
+
+
 # ── Webhooks ─────────────────────────────────────────────────────────────────
 class WebhookConfig(BaseModel):
     url: str | None = None

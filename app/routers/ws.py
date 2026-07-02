@@ -97,7 +97,28 @@ async def _prompt_lead_now(key: str, conv_id: str, chatbot_id: str) -> None:
     )
 
 
-async def _send_bot_message(key: str, conv_id: str, chatbot_id: str, text: str) -> None:
+def _emit_message_webhook(org_id: str, chatbot_id: str, conv_id: str, msg: dict) -> None:
+    """Push a message.created webhook for visitor/ai/agent messages."""
+    if msg.get("sender") not in ("visitor", "ai", "agent"):
+        return
+    webhooks.schedule(
+        org_id,
+        "message.created",
+        {
+            "conversation_id": conv_id,
+            "chatbot_id": chatbot_id,
+            "message_id": msg.get("id"),
+            "sender": msg.get("sender"),
+            "content": msg.get("content"),
+            "agent_name": msg.get("agent_name"),
+            "created_at": msg.get("created_at"),
+        },
+    )
+
+
+async def _send_bot_message(
+    key: str, conv_id: str, chatbot_id: str, text: str, org_id: str | None = None
+) -> None:
     """Send a canned bot message as its own bubble, persist it, notify agents."""
     await manager.send_to_visitor(key, {"type": "token", "token": text})
     await manager.send_to_visitor(key, {"type": "ai_done"})
@@ -112,6 +133,7 @@ async def _send_bot_message(key: str, conv_id: str, chatbot_id: str, text: str) 
         {"type": "message", "conversation_id": conv_id, "message": amsg_dict,
          "conversation": summary},
     )
+    _emit_message_webhook(org_id, chatbot_id, conv_id, amsg_dict)
 
 
 # ── Visitor WebSocket ───────────────────────────────────────────────────────
@@ -198,6 +220,11 @@ async def _handle_visitor_event(
             {"type": "conversation_updated", "conversation": summary,
              "message": sys_dict},
         )
+        webhooks.schedule(
+            org_id,
+            "conversation.human_requested",
+            {"conversation_id": conv_id, "chatbot_id": chatbot_id, "session_id": session_id},
+        )
         return
 
     if mtype == "lead":
@@ -280,6 +307,7 @@ async def _handle_visitor_event(
         {"type": "message", "conversation_id": conv_id, "message": vmsg_dict,
          "conversation": summary},
     )
+    _emit_message_webhook(org_id, chatbot_id, conv_id, vmsg_dict)
 
     if mode == "human":
         # Live agent handles it; AI stays silent.
@@ -320,6 +348,7 @@ async def _handle_visitor_event(
         {"type": "message", "conversation_id": conv_id, "message": amsg_dict,
          "conversation": summary},
     )
+    _emit_message_webhook(org_id, chatbot_id, conv_id, amsg_dict)
 
     # No answer found: offer the phone + lead form right away.
     if usage.get("no_context"):
@@ -455,8 +484,10 @@ async def ws_agent(websocket: WebSocket, token: str = Query(...)):
                     amsg = crud.add_conversation_message(
                         db, conv, "agent", text, agent_id=agent_id, agent_name=agent_name
                     )
+                    amsg_dict = _msg_dict(amsg)
                     cb = db.get(Chatbot, conv.chatbot_id)
                     vkey = visitor_key(cb.id, conv.session_id)
+                    cb_id = cb.id
                     summary = crud.conversation_summary(db, conv)
                 await manager.send_to_visitor(
                     vkey,
@@ -465,8 +496,9 @@ async def ws_agent(websocket: WebSocket, token: str = Query(...)):
                 await manager.broadcast_to_org_agents(
                     org_id,
                     {"type": "message", "conversation_id": conv_id,
-                     "message": _msg_dict(amsg), "conversation": summary},
+                     "message": amsg_dict, "conversation": summary},
                 )
+                _emit_message_webhook(org_id, cb_id, conv_id, amsg_dict)
     except WebSocketDisconnect:
         manager.disconnect_agent(websocket)
     except Exception:

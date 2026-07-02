@@ -12,9 +12,12 @@ read conversations, full transcripts, and leads, and write a lead's status back.
 - **Conversations** (each website visitor session) with metadata.
 - **Transcripts** — every message (visitor / AI / live agent / system).
 - **Write-back** — mark a lead `new` → `contacted` from your CRM.
+- **Live agent** — get messages + "talk to a human" requests pushed in real time
+  (webhooks), take over a chat, reply to the visitor live, and hand back to the AI.
 
 Everything is **organization-scoped**: one CRM key covers all chatbots in the
-org. It is **read-only except** the lead-status write-back.
+org. It's read-only **except** lead-status write-back and the live-agent actions
+(takeover / reply / release).
 
 ---
 
@@ -49,6 +52,9 @@ https://api.ambrosianuk.com
 | GET | `/crm/conversations/{id}/messages` | full transcript of one conversation |
 | GET | `/crm/leads` | list leads (filter by `status`, `since`, paginated) |
 | PATCH | `/crm/leads/{id}` | update a lead's status (`new`/`contacted`) |
+| POST | `/crm/conversations/{id}/takeover` | **become the live agent** (pauses AI) |
+| POST | `/crm/conversations/{id}/messages` | **send an agent reply** to the visitor |
+| POST | `/crm/conversations/{id}/release` | hand the chat back to the AI |
 
 ### 3.1 GET /crm/chatbots
 ```json
@@ -129,6 +135,38 @@ Response:
 ```
 Use this when your sales team actions a lead — it updates the status shown in
 the client's dashboard too. `status` must be `new` or `contacted`.
+
+### 3.6 Live-agent actions (chat live with the visitor)
+
+Turn your CRM into a live-chat console: take over a conversation from the AI,
+send replies that appear in the visitor's chat widget instantly, then release
+back to the AI. Pair these with the `message.created` and
+`conversation.human_requested` webhooks (§7) for real-time inbound.
+
+**Take over** — pauses the AI, assigns your agent:
+```
+POST /crm/conversations/{id}/takeover
+{ "agent_name": "Alex" }        # shown to the visitor as "chatting with Alex"
+→ { "conversation_id": "…", "mode": "human", "assigned_agent_name": "Alex" }
+```
+`409` if another agent (your dashboard or a different CRM user) already took it.
+
+**Send a reply** — delivered to the visitor's widget in real time:
+```
+POST /crm/conversations/{id}/messages
+{ "text": "Hi, I can help with that.", "agent_name": "Alex" }
+→ { "id": 123, "conversation_id": "…", "sender": "agent" }
+```
+`409` if you haven't taken over yet (call `takeover` first).
+
+**Release** — AI resumes answering:
+```
+POST /crm/conversations/{id}/release
+→ { "conversation_id": "…", "mode": "ai" }
+```
+
+While in `human` mode the AI stays silent; the visitor's messages come to you via
+the `message.created` webhook (or by polling the transcript).
 
 ---
 
@@ -271,11 +309,38 @@ Reject with `401` if it doesn't match. Never process an unverified payload.
 - **Idempotency**: dedupe on `data.id` — a retried delivery has the same id.
 
 ### Events
-- `lead.created` — a visitor submitted the callback form.
-- `ping` — sent by the dashboard "Send test event" button.
 
-> Webhooks are for **real-time new leads**. Use the **REST API** for history,
-> transcripts, backfill, and recovery — they complement each other.
+| Event | Fires when | `data` fields |
+|---|---|---|
+| `lead.created` | visitor submits the callback form | id, chatbot_id, conversation_id, name, phone, email, status |
+| `message.created` | any visitor / ai / agent message | conversation_id, chatbot_id, message_id, sender, content, agent_name, created_at |
+| `conversation.human_requested` | visitor clicks "talk to a human" | conversation_id, chatbot_id, session_id |
+| `ping` | dashboard "Send test event" | message |
+
+`message.created` example:
+```json
+{
+  "event": "message.created",
+  "created_at": "…",
+  "data": {
+    "conversation_id": "…", "chatbot_id": "…", "message_id": 42,
+    "sender": "visitor",            // visitor | ai | agent
+    "content": "Do you install in Sydney?",
+    "agent_name": null, "created_at": "…"
+  }
+}
+```
+
+### Live-agent loop (real-time two-way)
+1. `conversation.human_requested` arrives → show the chat in your CRM, alert an agent.
+2. Agent clicks "take over" in your CRM → `POST /crm/conversations/{id}/takeover`.
+3. Each visitor message arrives as `message.created` (sender `visitor`).
+4. Agent types → `POST /crm/conversations/{id}/messages` → the visitor sees it live.
+5. Done → `POST /crm/conversations/{id}/release` (AI resumes).
+
+> Webhooks are for **real-time** (new leads, messages, human requests). Use the
+> **REST API** for history, transcripts, backfill, and recovery — together they
+> make a complete live-agent integration.
 
 ---
 
