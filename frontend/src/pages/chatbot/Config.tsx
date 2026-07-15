@@ -60,7 +60,7 @@ export default function ConfigPage() {
         </Field>
         <Field
           label="Model"
-          hint="Groq: llama-3.1-8b-instant · llama-3.3-70b-versatile · qwen/qwen3-32b. Ollama: qwen2.5:1.5b"
+          hint="Groq: llama-3.1-8b-instant · llama-3.3-70b-versatile · openai/gpt-oss-120b. Ollama: qwen2.5:1.5b"
         >
           <Input
             value={form.model}
