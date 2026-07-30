@@ -18,6 +18,9 @@ export default function ConfigPage() {
     lead_after_messages: bot.lead_after_messages,
     sales_phone: bot.sales_phone ?? "",
   });
+  const [questionsText, setQuestionsText] = useState(
+    (bot.suggested_questions ?? []).join("\n")
+  );
   const [saving, setSaving] = useState(false);
 
   const set = (k: keyof ChatbotInput, v: string) => setForm({ ...form, [k]: v });
@@ -25,7 +28,12 @@ export default function ConfigPage() {
   const save = async () => {
     setSaving(true);
     try {
-      await api.updateChatbot(bot.id, form);
+      const suggested_questions = questionsText
+        .split("\n")
+        .map((q) => q.trim())
+        .filter(Boolean)
+        .slice(0, 6);
+      await api.updateChatbot(bot.id, { ...form, suggested_questions });
       toast.success("Configuration saved");
       reload();
     } catch (e) {
@@ -74,6 +82,17 @@ export default function ConfigPage() {
           rows={2}
           value={form.welcome_message}
           onChange={(e) => set("welcome_message", e.target.value)}
+        />
+      </Field>
+      <Field
+        label="Suggested questions"
+        hint="Clickable starter chips shown when the chat is empty. One per line, up to 6."
+      >
+        <Textarea
+          rows={3}
+          value={questionsText}
+          onChange={(e) => setQuestionsText(e.target.value)}
+          placeholder={"What are your hours?\nHow do I contact support?\nDo you offer refunds?"}
         />
       </Field>
 

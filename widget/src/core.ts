@@ -141,7 +141,7 @@ export function createChatWidget(opts: ChatWidgetOptions): ChatWidgetInstance {
     return row;
   };
 
-  const chips = (theme.suggestedQuestions ?? []).filter((q) => q.trim());
+  let chips = (theme.suggestedQuestions ?? []).filter((q) => q.trim());
   const renderChips = () => {
     if (!chips.length || messages.length > 0) return;
     const wrap = document.createElement("div");
@@ -321,6 +321,26 @@ export function createChatWidget(opts: ChatWidgetOptions): ChatWidgetInstance {
   });
 
   socket = connectChatSocket(opts.apiUrl, opts.apiKey, sessionId, buildHandlers());
+
+  // Pull dashboard-managed starter chips unless the embed hardcoded them.
+  if (chips.length === 0) {
+    fetch(`${opts.apiUrl.replace(/\/$/, "")}/widget-config`, {
+      headers: { "X-API-Key": opts.apiKey },
+    })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((cfg) => {
+        const qs: string[] = (cfg?.suggested_questions ?? []).filter(
+          (q: unknown): q is string => typeof q === "string" && q.trim() !== ""
+        );
+        if (qs.length && messages.length === 0) {
+          chips = qs;
+          if (!messagesEl.querySelector(".rc-chips")) renderChips();
+        }
+      })
+      .catch(() => {
+        /* offline / no config — silently skip chips */
+      });
+  }
 
   // ── Send flow ──
   const sendText = (raw: string) => {

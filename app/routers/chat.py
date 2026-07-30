@@ -8,13 +8,24 @@ from sse_starlette.sse import EventSourceResponse
 
 from app.db.base import get_db
 from app.db.models import Chatbot
-from app.schemas import ChatRequest
+from app.schemas import ChatRequest, WidgetConfig
 from app.services import rag
 from app.services.auth import require_api_key
 from app.services.ratelimit import RATE_LIMIT, limiter
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["chat"])
+
+
+@router.get("/widget-config", response_model=WidgetConfig)
+def widget_config(chatbot: Chatbot = Depends(require_api_key)) -> WidgetConfig:
+    """Public presentation config for the embedded widget (API-key scoped).
+
+    Lets the dashboard drive starter chips without re-embedding the script.
+    """
+    raw = chatbot.suggested_questions or ""
+    questions = [ln.strip() for ln in raw.splitlines() if ln.strip()]
+    return WidgetConfig(suggested_questions=questions)
 
 
 @router.post("/chat")

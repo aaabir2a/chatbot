@@ -24,6 +24,7 @@ export interface Chatbot {
   lead_enabled: boolean;
   lead_after_messages: number;
   sales_phone: string | null;
+  suggested_questions: string[];
   created_at: string;
 }
 
@@ -36,6 +37,7 @@ export interface ChatbotInput {
   lead_enabled?: boolean;
   lead_after_messages?: number;
   sales_phone?: string;
+  suggested_questions?: string[];
 }
 
 export interface Lead {

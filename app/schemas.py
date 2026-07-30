@@ -1,7 +1,7 @@
 """Pydantic models for request/response validation."""
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
 
 # ── Auth / Organizations ────────────────────────────────────────────────────
@@ -40,6 +40,7 @@ class ChatbotCreate(BaseModel):
     lead_enabled: bool | None = None
     lead_after_messages: int | None = Field(default=None, ge=1, le=20)
     sales_phone: str | None = Field(default=None, max_length=64)
+    suggested_questions: list[str] | None = Field(default=None, max_length=6)
 
 
 class ChatbotUpdate(BaseModel):
@@ -51,6 +52,16 @@ class ChatbotUpdate(BaseModel):
     lead_enabled: bool | None = None
     lead_after_messages: int | None = Field(default=None, ge=1, le=20)
     sales_phone: str | None = Field(default=None, max_length=64)
+    suggested_questions: list[str] | None = Field(default=None, max_length=6)
+
+
+def _split_questions(v: object) -> list[str]:
+    """Stored newline-separated in the DB; exposed as a trimmed list."""
+    if v is None:
+        return []
+    if isinstance(v, str):
+        return [ln.strip() for ln in v.splitlines() if ln.strip()]
+    return list(v)  # already a list
 
 
 class ChatbotInfo(BaseModel):
@@ -65,7 +76,18 @@ class ChatbotInfo(BaseModel):
     lead_enabled: bool
     lead_after_messages: int
     sales_phone: str | None = None
+    suggested_questions: list[str] = Field(default_factory=list)
     created_at: datetime
+
+    @field_validator("suggested_questions", mode="before")
+    @classmethod
+    def _parse_questions(cls, v: object) -> list[str]:
+        return _split_questions(v)
+
+
+class WidgetConfig(BaseModel):
+    """Public presentation config the embedded widget fetches with its API key."""
+    suggested_questions: list[str] = Field(default_factory=list)
 
 
 # ── API keys ───────────────────────────────────────────────────────────────

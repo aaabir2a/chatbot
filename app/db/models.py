@@ -86,6 +86,9 @@ class Chatbot(Base):
     welcome_message: Mapped[str] = mapped_column(
         Text, default="Hi! How can I help you today?", nullable=False
     )
+    # Clickable starter questions shown in the widget when the chat is empty.
+    # Stored newline-separated; exposed as a list via the schema layer.
+    suggested_questions: Mapped[str | None] = mapped_column(Text, nullable=True)
     model: Mapped[str] = mapped_column(
         String(255), default=settings.llm_model, nullable=False
     )

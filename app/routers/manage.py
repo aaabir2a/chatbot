@@ -49,6 +49,14 @@ logger = logging.getLogger(__name__)
 router = APIRouter(tags=["manage"], dependencies=[Depends(require_org)])
 
 
+def _join_questions(items: list[str] | None) -> str | None:
+    """List of chips -> newline-separated Text for storage (None if empty)."""
+    if not items:
+        return None
+    cleaned = [s.strip() for s in items if s and s.strip()][:6]
+    return "\n".join(cleaned) or None
+
+
 # ── Chatbots ───────────────────────────────────────────────────────────────
 @router.get("/chatbots", response_model=list[ChatbotInfo])
 def list_chatbots(
@@ -69,6 +77,8 @@ def create_chatbot(
     db: Session = Depends(get_db),
 ) -> Chatbot:
     fields = {k: v for k, v in body.model_dump().items() if v is not None}
+    if "suggested_questions" in fields:
+        fields["suggested_questions"] = _join_questions(fields["suggested_questions"])
     chatbot = Chatbot(org_id=org.id, **fields)
     db.add(chatbot)
     db.commit()
@@ -94,6 +104,8 @@ def update_chatbot(
 ) -> Chatbot:
     chatbot = owned_chatbot(db, org, chatbot_id)
     for k, v in body.model_dump(exclude_none=True).items():
+        if k == "suggested_questions":
+            v = _join_questions(v)
         setattr(chatbot, k, v)
     db.commit()
     db.refresh(chatbot)
