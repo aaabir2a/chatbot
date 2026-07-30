@@ -53,6 +53,12 @@ window.RagChat = { init };
   if (d.welcomeMessage) theme.welcomeMessage = d.welcomeMessage;
   if (d.placeholder) theme.placeholder = d.placeholder;
   if (d.launcherIcon) theme.launcherIcon = d.launcherIcon;
+  // Pipe-separated list, e.g. data-suggested-questions="Pricing?|Hours?|Contact?"
+  if (d.suggestedQuestions)
+    theme.suggestedQuestions = d.suggestedQuestions
+      .split("|")
+      .map((q) => q.trim())
+      .filter(Boolean);
 
   const run = () => init({ apiUrl: d.apiUrl!, apiKey: d.apiKey!, chatbotId: d.chatbotId!, theme });
   if (document.readyState === "loading") {

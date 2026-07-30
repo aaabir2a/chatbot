@@ -141,6 +141,22 @@ export function createChatWidget(opts: ChatWidgetOptions): ChatWidgetInstance {
     return row;
   };
 
+  const chips = (theme.suggestedQuestions ?? []).filter((q) => q.trim());
+  const renderChips = () => {
+    if (!chips.length || messages.length > 0) return;
+    const wrap = document.createElement("div");
+    wrap.className = "rc-chips";
+    for (const q of chips) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "rc-chip";
+      btn.textContent = q;
+      btn.addEventListener("click", () => sendText(q));
+      wrap.appendChild(btn);
+    }
+    messagesEl.appendChild(wrap);
+  };
+
   const renderAll = () => {
     messagesEl.innerHTML = "";
     const list =
@@ -148,6 +164,7 @@ export function createChatWidget(opts: ChatWidgetOptions): ChatWidgetInstance {
         ? [{ role: "bot", text: theme.welcomeMessage } as Msg]
         : messages;
     for (const m of list) messagesEl.appendChild(nodeFor(m));
+    renderChips();
     scrollDown();
   };
 
@@ -306,14 +323,20 @@ export function createChatWidget(opts: ChatWidgetOptions): ChatWidgetInstance {
   socket = connectChatSocket(opts.apiUrl, opts.apiKey, sessionId, buildHandlers());
 
   // ── Send flow ──
+  const sendText = (raw: string) => {
+    const text = raw.trim();
+    if (!text) return;
+    messagesEl.querySelector(".rc-chips")?.remove(); // hide chips once used
+    appendMsg({ role: "user", text });
+    if (mode === "ai") showTyping(); // agent replies have no typing indicator
+    socket?.send(text);
+  };
   const send = () => {
     const text = input.value.trim();
     if (!text) return;
     input.value = "";
     input.style.height = "auto";
-    appendMsg({ role: "user", text });
-    if (mode === "ai") showTyping(); // agent replies have no typing indicator
-    socket?.send(text);
+    sendText(text);
   };
 
   form.addEventListener("submit", (e) => {

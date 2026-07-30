@@ -154,6 +154,20 @@ export const WIDGET_CSS = `
 .rc-typing span:nth-child(3) { animation-delay: 0.4s; }
 @keyframes rc-blink { 0%,80%,100% { opacity: 0.25; } 40% { opacity: 1; } }
 
+/* ── Suggested-question chips ── */
+.rc-chips {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  margin-top: auto; padding-top: 10px;
+}
+.rc-chip {
+  border: 1px solid var(--rc-primary); background: var(--rc-bg);
+  color: var(--rc-primary); border-radius: 16px;
+  padding: 7px 12px; font-size: 13px; cursor: pointer;
+  font-family: inherit; line-height: 1.3; text-align: left;
+  transition: background 0.12s, color 0.12s;
+}
+.rc-chip:hover { background: var(--rc-primary); color: var(--rc-on-primary); }
+
 /* ── Composer ── */
 .rc-composer {
   display: flex; gap: 8px; padding: 12px; border-top: 1px solid var(--rc-border);

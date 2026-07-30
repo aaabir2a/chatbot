@@ -16,6 +16,9 @@ export interface ChatTheme {
   welcomeMessage?: string;
   /** Input placeholder text. */
   placeholder?: string;
+  /** Pre-set questions shown as clickable chips when the chat is empty.
+   *  Clicking one sends it immediately. Keep to 2–4 short items. */
+  suggestedQuestions?: string[];
   /** Launcher glyph (emoji or text). Default "💬". */
   launcherIcon?: string;
   /** Stack order for the floating elements. Default 2147483000. */
