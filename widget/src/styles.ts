@@ -157,7 +157,7 @@ export const WIDGET_CSS = `
 /* ── Suggested-question chips ── */
 .rc-chips {
   display: flex; flex-wrap: wrap; gap: 8px;
-  margin-top: auto; padding-top: 10px;
+  justify-content: center; padding-top: 4px;
 }
 .rc-chip {
   border: 1px solid var(--rc-primary); background: var(--rc-bg);
