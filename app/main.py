@@ -43,10 +43,14 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS for the dashboard frontend.
+# CORS. The dashboard is on a fixed origin, but the chat widget is embedded on
+# arbitrary customer domains and fetches /widget-config with an X-API-Key header
+# (a cross-origin request that triggers a preflight). Auth is via bearer token /
+# API key in headers — never cookies — so echoing any origin is safe here.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[o.strip() for o in settings.cors_origins.split(",") if o.strip()],
+    allow_origin_regex=".*",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
