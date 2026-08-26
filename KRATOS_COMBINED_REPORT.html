@@ -1,0 +1,561 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kratos — One System, Three Parts</title>
+</head>
+<body><style>
+  :root{
+    --ground:#E9ECEB;
+    --surface:#FCFDFC;
+    --surface-2:#DFE4E2;
+    --ink:#101817;
+    --ink-2:#4B5754;
+    --ink-3:#79847F;
+    --rule:#CBD3D0;
+    --accent:#0E5C6B;
+    --accent-soft:#DCE9EA;
+    --signal:#8A5A00;
+    --signal-soft:#F0E6CF;
+    --live:#2E6B39;
+    --live-soft:#DDE9DA;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --ground:#0B1113;
+      --surface:#121A1C;
+      --surface-2:#182225;
+      --ink:#E7EEEC;
+      --ink-2:#A5B2AF;
+      --ink-3:#78857F;
+      --rule:#23312F;
+      --accent:#59C2D2;
+      --accent-soft:#0F2A30;
+      --signal:#DFAA47;
+      --signal-soft:#2A2213;
+      --live:#7FC98A;
+      --live-soft:#15271A;
+    }
+  }
+  :root[data-theme="dark"]{
+    --ground:#0B1113;
+    --surface:#121A1C;
+    --surface-2:#182225;
+    --ink:#E7EEEC;
+    --ink-2:#A5B2AF;
+    --ink-3:#78857F;
+    --rule:#23312F;
+    --accent:#59C2D2;
+    --accent-soft:#0F2A30;
+    --signal:#DFAA47;
+    --signal-soft:#2A2213;
+    --live:#7FC98A;
+    --live-soft:#15271A;
+  }
+
+  *{box-sizing:border-box}
+
+  body{
+    background:var(--ground);
+    color:var(--ink);
+    font-family:Charter,"Bitstream Charter",Georgia,"Times New Roman",serif;
+    font-size:17px;
+    line-height:1.6;
+    margin:0;
+    padding:0 20px 88px;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .wrap{max-width:780px;margin:0 auto}
+
+  .disp{font-family:Bahnschrift,"DIN Alternate","Avenir Next Condensed","Franklin Gothic Medium",Impact,system-ui,sans-serif}
+  .mono{font-family:Consolas,"SF Mono",ui-monospace,Menlo,monospace}
+
+  /* ---- masthead ---- */
+  .masthead{
+    display:flex;flex-direction:column;gap:16px;
+    padding:60px 0 30px;border-bottom:4px solid var(--accent);
+  }
+  .kicker{
+    font-family:Consolas,"SF Mono",ui-monospace,Menlo,monospace;
+    font-size:12px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--accent);margin:0;
+  }
+  h1{
+    font-family:Bahnschrift,"DIN Alternate","Avenir Next Condensed","Franklin Gothic Medium",Impact,system-ui,sans-serif;
+    font-size:clamp(36px,7vw,62px);
+    line-height:1.02;letter-spacing:.005em;font-weight:700;
+    text-transform:uppercase;text-wrap:balance;margin:0;
+  }
+  .standfirst{margin:0;font-size:19px;color:var(--ink-2);max-width:60ch}
+  .byline{
+    display:flex;flex-wrap:wrap;gap:6px 20px;
+    font-family:Consolas,"SF Mono",ui-monospace,Menlo,monospace;
+    font-size:12.5px;color:var(--ink-3);
+  }
+
+  /* ---- section rhythm ---- */
+  section{padding-top:52px}
+  h2{
+    font-family:Bahnschrift,"DIN Alternate","Avenir Next Condensed","Franklin Gothic Medium",Impact,system-ui,sans-serif;
+    font-size:13px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--ink-3);margin:0 0 10px;
+  }
+  .lede{
+    font-family:Bahnschrift,"DIN Alternate","Avenir Next Condensed","Franklin Gothic Medium",Impact,system-ui,sans-serif;
+    font-size:28px;line-height:1.16;font-weight:600;letter-spacing:.005em;
+    text-wrap:balance;margin:0 0 22px;
+  }
+  p{margin:0 0 16px;max-width:66ch}
+  strong{font-weight:700}
+
+  /* ---- readout strip ---- */
+  .readout{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(132px,1fr));
+    gap:1px;background:var(--rule);border:1px solid var(--rule);
+  }
+  .cell{background:var(--surface);padding:16px 18px}
+  .cell b{
+    display:block;
+    font-family:Bahnschrift,"DIN Alternate","Avenir Next Condensed","Franklin Gothic Medium",Impact,system-ui,sans-serif;
+    font-size:36px;font-weight:700;line-height:1;color:var(--accent);
+    font-variant-numeric:tabular-nums;
+  }
+  .cell span{
+    display:block;margin-top:7px;font-size:12.5px;color:var(--ink-2);
+    font-family:Consolas,"SF Mono",ui-monospace,Menlo,monospace;line-height:1.35;
+  }
+
+  /* ---- flow diagram ---- */
+  .diagram{overflow-x:auto;margin:6px 0 20px;border:1px solid var(--rule);background:var(--surface)}
+  .diagram svg{display:block;min-width:660px;width:100%;height:auto}
+
+  /* ---- parts ---- */
+  .parts{display:flex;flex-direction:column;gap:1px;background:var(--rule);border:1px solid var(--rule)}
+  .part{background:var(--surface);padding:22px 24px}
+  .part-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px 14px;margin-bottom:6px}
+  .part-head h3{
+    font-family:Bahnschrift,"DIN Alternate","Avenir Next Condensed","Franklin Gothic Medium",Impact,system-ui,sans-serif;
+    font-size:22px;font-weight:700;letter-spacing:.01em;margin:0;
+  }
+  .stamp{
+    font-family:Consolas,"SF Mono",ui-monospace,Menlo,monospace;
+    font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+    padding:3px 8px;background:var(--live-soft);color:var(--live);white-space:nowrap;
+  }
+  .part-head .dates{
+    font-family:Consolas,"SF Mono",ui-monospace,Menlo,monospace;
+    font-size:12px;color:var(--ink-3);margin-left:auto;white-space:nowrap;
+  }
+  .part ul{margin:10px 0 0;padding-left:19px;display:flex;flex-direction:column;gap:6px;color:var(--ink-2)}
+  .part ul li{max-width:64ch}
+  .part .role{margin:0;color:var(--ink);font-size:16.5px}
+
+  /* ---- change list ---- */
+  .changes{display:flex;flex-direction:column;gap:1px;background:var(--rule);border:1px solid var(--rule);margin-top:4px}
+  .change{background:var(--surface);padding:18px 22px}
+  .change h3{
+    font-family:Bahnschrift,"DIN Alternate","Avenir Next Condensed","Franklin Gothic Medium",Impact,system-ui,sans-serif;
+    font-size:19px;font-weight:700;margin:0 0 4px;letter-spacing:.01em;
+  }
+  .change p{margin:0;color:var(--ink-2);font-size:16px}
+
+  /* ---- tables ---- */
+  .tscroll{overflow-x:auto;border:1px solid var(--rule);margin-top:4px}
+  table{border-collapse:collapse;width:100%;min-width:540px;background:var(--surface)}
+  th{
+    font-family:Consolas,"SF Mono",ui-monospace,Menlo,monospace;
+    font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;
+    text-align:left;color:var(--ink-3);background:var(--surface-2);padding:11px 16px;white-space:nowrap;
+  }
+  td{padding:13px 16px;border-top:1px solid var(--rule);vertical-align:top;font-size:15.5px;color:var(--ink-2)}
+  td.item{color:var(--ink);font-weight:700;min-width:180px}
+  .band td{background:var(--surface-2);color:var(--ink);padding:10px 16px}
+  .band .m{
+    font-family:Bahnschrift,"DIN Alternate","Avenir Next Condensed","Franklin Gothic Medium",Impact,system-ui,sans-serif;
+    font-size:14px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;
+  }
+  .band .m em{font-style:normal;color:var(--ink-3);font-family:Consolas,"SF Mono",ui-monospace,Menlo,monospace;font-size:12px;letter-spacing:.06em;margin-left:10px;text-transform:none}
+  .who{
+    font-family:Consolas,"SF Mono",ui-monospace,Menlo,monospace;
+    font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+    padding:3px 8px;background:var(--accent-soft);color:var(--accent);white-space:nowrap;
+  }
+
+  /* ---- build tracks ---- */
+  .tracks{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);margin-top:4px}
+  .track{background:var(--surface);padding:22px 24px;display:flex;flex-direction:column;gap:8px}
+  .track .eyebrow{
+    font-family:Consolas,"SF Mono",ui-monospace,Menlo,monospace;
+    font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--signal);
+  }
+  .track h3{
+    font-family:Bahnschrift,"DIN Alternate","Avenir Next Condensed","Franklin Gothic Medium",Impact,system-ui,sans-serif;
+    font-size:21px;font-weight:700;letter-spacing:.01em;margin:0;
+  }
+  .track p{margin:0;font-size:15.5px;color:var(--ink-3)}
+  .track ul{margin:4px 0 0;padding-left:19px;display:flex;flex-direction:column;gap:7px;color:var(--ink-2);font-size:15.5px}
+  .track ul li b{color:var(--ink);font-weight:700}
+
+  .decide{display:flex;flex-direction:column;gap:1px;background:var(--rule);border:1px solid var(--rule);margin-top:4px}
+  .decide div{background:var(--surface);padding:14px 20px;font-size:16px;color:var(--ink-2)}
+  .decide div b{color:var(--ink);font-weight:700}
+
+  .close{
+    margin-top:28px;padding:24px;background:var(--accent-soft);
+    border-left:4px solid var(--accent);
+  }
+  .close p{
+    margin:0;max-width:62ch;font-size:19px;color:var(--ink);
+  }
+
+  footer{
+    margin-top:56px;padding-top:20px;border-top:1px solid var(--rule);
+    font-family:Consolas,"SF Mono",ui-monospace,Menlo,monospace;
+    font-size:12.5px;color:var(--ink-3);line-height:1.7;
+  }
+  footer p{margin:0;max-width:none}
+
+  @media (max-width:560px){
+    .part-head .dates{margin-left:0;width:100%}
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <p class="kicker">Kratos Energy &middot; build report &amp; 90-day plan</p>
+    <h1>One system, three parts</h1>
+    <p class="standfirst">In ten weeks the business went from a brochure website to a connected machine: a site that attracts, a chatbot that answers, and a CRM that owns every enquiry through to a won or lost sale.</p>
+    <div class="byline">
+      <span>1 JUN &ndash; 12 AUG 2026</span>
+      <span>WEBSITE &middot; CRM &middot; CHATBOT</span>
+      <span>ALL LIVE ON YOUR OWN SERVER</span>
+    </div>
+  </header>
+
+  <section>
+    <h2>Where it stands</h2>
+    <div class="readout">
+      <div class="cell"><b>31</b><span>public pages</span></div>
+      <div class="cell"><b>6</b><span>working calculators</span></div>
+      <div class="cell"><b>4</b><span>enquiry channels, one list</span></div>
+      <div class="cell"><b>3</b><span>states served</span></div>
+      <div class="cell"><b>0</b><span>monthly licence fees</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>How the three parts work as one</h2>
+    <p class="lede">A visitor is never handed off to a different system. The record follows them.</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 700 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Website attracts, chatbot answers, CRM captures and closes; content flows back from the CRM to the website.">
+        <defs>
+          <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--accent)"></path>
+          </marker>
+          <marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--signal)"></path>
+          </marker>
+        </defs>
+
+        <rect x="24" y="52" width="180" height="96" fill="var(--surface-2)" stroke="var(--rule)"></rect>
+        <rect x="260" y="52" width="180" height="96" fill="var(--surface-2)" stroke="var(--rule)"></rect>
+        <rect x="496" y="52" width="180" height="96" fill="var(--surface-2)" stroke="var(--rule)"></rect>
+
+        <rect x="24" y="52" width="180" height="4" fill="var(--accent)"></rect>
+        <rect x="260" y="52" width="180" height="4" fill="var(--accent)"></rect>
+        <rect x="496" y="52" width="180" height="4" fill="var(--accent)"></rect>
+
+        <text x="40" y="88" fill="var(--ink)" font-family="Bahnschrift, 'DIN Alternate', 'Franklin Gothic Medium', sans-serif" font-size="19" font-weight="700">WEBSITE</text>
+        <text x="40" y="112" fill="var(--ink-2)" font-family="Consolas, monospace" font-size="12.5">Search, ads, calculators</text>
+        <text x="40" y="131" fill="var(--ink-2)" font-family="Consolas, monospace" font-size="12.5">bring people in</text>
+
+        <text x="276" y="88" fill="var(--ink)" font-family="Bahnschrift, 'DIN Alternate', 'Franklin Gothic Medium', sans-serif" font-size="19" font-weight="700">CHATBOT</text>
+        <text x="276" y="112" fill="var(--ink-2)" font-family="Consolas, monospace" font-size="12.5">Answers 24/7, asks for</text>
+        <text x="276" y="131" fill="var(--ink-2)" font-family="Consolas, monospace" font-size="12.5">name and number</text>
+
+        <text x="512" y="88" fill="var(--ink)" font-family="Bahnschrift, 'DIN Alternate', 'Franklin Gothic Medium', sans-serif" font-size="19" font-weight="700">CRM</text>
+        <text x="512" y="112" fill="var(--ink-2)" font-family="Consolas, monospace" font-size="12.5">Assigns a rep, tracks</text>
+        <text x="512" y="131" fill="var(--ink-2)" font-family="Consolas, monospace" font-size="12.5">to won or lost</text>
+
+        <line x1="212" y1="100" x2="250" y2="100" stroke="var(--accent)" stroke-width="2" marker-end="url(#ar)"></line>
+        <line x1="448" y1="100" x2="486" y2="100" stroke="var(--accent)" stroke-width="2" marker-end="url(#ar)"></line>
+
+        <path d="M 586 156 L 586 196 L 114 196 L 114 156" fill="none" stroke="var(--signal)" stroke-width="2" stroke-dasharray="5 5" marker-end="url(#ar2)"></path>
+        <text x="350" y="220" text-anchor="middle" fill="var(--signal)" font-family="Consolas, monospace" font-size="12.5">Products, prices, projects and blogs published back to the site</text>
+
+        <text x="24" y="34" fill="var(--ink-3)" font-family="Consolas, monospace" font-size="11.5" letter-spacing="1.6">ATTRACT</text>
+        <text x="260" y="34" fill="var(--ink-3)" font-family="Consolas, monospace" font-size="11.5" letter-spacing="1.6">QUALIFY</text>
+        <text x="496" y="34" fill="var(--ink-3)" font-family="Consolas, monospace" font-size="11.5" letter-spacing="1.6">CLOSE</text>
+      </svg>
+    </div>
+
+    <p>Before this, an enquiry arrived by email or form and its life depended on someone noticing it. Nobody could say which ad produced it or who followed up. Now every enquiry is recorded, tagged with where it came from, handed to a named rep within seconds, and visible on a board until it is closed.</p>
+  </section>
+
+  <section>
+    <h2>What each part does</h2>
+
+    <div class="parts">
+
+      <div class="part">
+        <div class="part-head">
+          <h3>The website</h3>
+          <span class="stamp">Live</span>
+          <span class="dates">1 Jun &ndash; 10 Aug &middot; 65 releases</span>
+        </div>
+        <p class="role">Brings buyers in and warms them up before anyone picks up the phone.</p>
+        <ul>
+          <li>31 pages covering residential, commercial, batteries, EV charging and finance.</li>
+          <li>Six calculators &mdash; rebate by postcode, battery rebate, solar output, feed-in tariff, EV cost, savings and payback &mdash; using official Clean Energy Regulator figures.</li>
+          <li>Built to rank: sitemap, page descriptions, structured data, and pages generated automatically for each state's rebates.</li>
+          <li>Every form, product, image and blog post is edited in the CRM, not by a developer.</li>
+          <li>Runs on your server behind Cloudflare. No platform fee, no third party holding the site.</li>
+        </ul>
+      </div>
+
+      <div class="part">
+        <div class="part-head">
+          <h3>The CRM</h3>
+          <span class="stamp">Live</span>
+          <span class="dates">29 Jun &ndash; 11 Aug &middot; 47 releases</span>
+        </div>
+        <p class="role">Owns the enquiry from the moment it arrives until it is won or lost.</p>
+        <ul>
+          <li>Forms, landing pages, social and the chatbot all feed one lead list. Duplicates merge instead of multiplying.</li>
+          <li>Every lead permanently records the ad, campaign and page it came from. Campaigns carry their cost, so cost-per-lead is measured, not guessed.</li>
+          <li>New leads distribute round-robin across the team, balanced by workload and office, with instant notification to the rep.</li>
+          <li>Drag-and-drop sales board: lead &rarr; deal with priced line items &rarr; quoted &rarr; negotiation &rarr; won or lost. Prices lock at the moment of sale.</li>
+          <li>Four roles with separate access, a full audit trail, and spreadsheet import/export with validation.</li>
+        </ul>
+      </div>
+
+      <div class="part">
+        <div class="part-head">
+          <h3>The chatbot</h3>
+          <span class="stamp">Live</span>
+          <span class="dates">8 Jun &ndash; 30 Jul</span>
+        </div>
+        <p class="role">Works the night shift, and hands over to a human when it matters.</p>
+        <ul>
+          <li>Answers only from your own uploaded documents &mdash; no invented answers &mdash; and remembers the conversation.</li>
+          <li>Asks for name, phone and email after a few messages, and politely asks again if the visitor skips.</li>
+          <li>When someone shows buying interest, or the bot has no answer, it shows the sales number and contact form immediately.</li>
+          <li>Staff watch live chats and take over mid-conversation from the CRM, then hand back to the bot.</li>
+          <li>Built to run many separate chatbots on one system &mdash; each client sealed off from the others.</li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <h2>The changes that matter</h2>
+    <p class="lede">Five differences in kind, not degree.</p>
+
+    <div class="changes">
+      <div class="change">
+        <h3>Nothing lives in a personal inbox</h3>
+        <p>Website, chat, campaign pages and social all land in the same list, on the same record. Leads no longer go cold quietly.</p>
+      </div>
+      <div class="change">
+        <h3>Speed of first contact is no longer a person's job</h3>
+        <p>Leads assign themselves in seconds. In solar, the first company to call back usually wins the job.</p>
+      </div>
+      <div class="change">
+        <h3>Marketing spend can be judged, not defended</h3>
+        <p>Each lead carries its source for life. Budget moves toward what actually produced sales, with evidence.</p>
+      </div>
+      <div class="change">
+        <h3>Buyers arrive half-sold</h3>
+        <p>Calculators answer the money question and the bot answers the rest, at any hour. Price anxiety is handled before the sales call, not during it.</p>
+      </div>
+      <div class="change">
+        <h3>Owned, not rented</h3>
+        <p>A commercial CRM charges per seat every month, forever, and holds your customer data. All three systems are yours, on your server, and cost nothing extra as the team grows.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>The next 90 days</h2>
+    <p class="lede">Harden what exists, measure it, then make it chase leads on its own.</p>
+
+    <div class="tscroll">
+      <table>
+        <thead>
+          <tr><th>What</th><th>What it gives you</th><th>Part</th></tr>
+        </thead>
+        <tbody>
+          <tr class="band"><td colspan="3" class="m">Month 1 &mdash; Harden and connect <em>mid Aug &rarr; mid Sep</em></td></tr>
+          <tr>
+            <td class="item">Backups, monitoring and a security review</td>
+            <td>Your customer list survives a server failure, and you hear about problems before customers do.</td>
+            <td><span class="who">CRM</span></td>
+          </tr>
+          <tr>
+            <td class="item">Instant push from chatbot to CRM</td>
+            <td>Chat leads appear the moment they happen instead of on a few-seconds delay. Design is done; build is short.</td>
+            <td><span class="who">Bot</span></td>
+          </tr>
+          <tr>
+            <td class="item">Switch on conversion tracking</td>
+            <td>Quote submissions and calculator completions count as conversions, so ads are judged on leads instead of clicks.</td>
+            <td><span class="who">Web</span></td>
+          </tr>
+          <tr>
+            <td class="item">Branded quote documents</td>
+            <td>A proper priced quote generated from the deal in one click, sent from the CRM, with a record of when the customer opened it.</td>
+            <td><span class="who">CRM</span></td>
+          </tr>
+
+          <tr class="band"><td colspan="3" class="m">Month 2 &mdash; Measure and follow up <em>mid Sep &rarr; mid Oct</em></td></tr>
+          <tr>
+            <td class="item">Reporting dashboards</td>
+            <td>Sales funnel, return per lead source, and rep-by-rep performance on one screen. Nine weeks of real data is already collected.</td>
+            <td><span class="who">CRM</span></td>
+          </tr>
+          <tr>
+            <td class="item">Email from inside the CRM</td>
+            <td>Quotes and follow-ups sent and tracked against the lead record, with templates. Every conversation in one timeline.</td>
+            <td><span class="who">CRM</span></td>
+          </tr>
+          <tr>
+            <td class="item">Chatbot analytics</td>
+            <td>Most-asked questions, chat-to-lead conversion rate, and the hours customers are most active.</td>
+            <td><span class="who">Bot</span></td>
+          </tr>
+          <tr>
+            <td class="item">Sydney, Melbourne and Canberra pages</td>
+            <td>The same engine that made state pages captures "solar in my city" searches, which convert far better.</td>
+            <td><span class="who">Web</span></td>
+          </tr>
+          <tr>
+            <td class="item">Two posts a month, every month</td>
+            <td>The publishing system is finished and unused. Rebate explainers and case studies compound search traffic over a year.</td>
+            <td><span class="who">Web</span></td>
+          </tr>
+
+          <tr class="band"><td colspan="3" class="m">Month 3 &mdash; Automate and extend <em>mid Oct &rarr; mid Nov</em></td></tr>
+          <tr>
+            <td class="item">Follow-up automation</td>
+            <td>Rules that act on their own: chase a quote after three days, alert a manager when a lead goes quiet, re-engage old enquiries. The biggest remaining lift in leads-to-sales.</td>
+            <td><span class="who">CRM</span></td>
+          </tr>
+          <tr>
+            <td class="item">Lead scoring and saved lists</td>
+            <td>Reps work the enquiries most likely to buy first, instead of working down the list by date.</td>
+            <td><span class="who">CRM</span></td>
+          </tr>
+          <tr>
+            <td class="item">WhatsApp and Messenger</td>
+            <td>The same chatbot engine answers on the channels customers already use. No second system to build.</td>
+            <td><span class="who">Bot</span></td>
+          </tr>
+          <tr>
+            <td class="item">Accept the quote online</td>
+            <td>The customer approves the quote and pays a deposit from a link, without a phone call. The deal moves itself to Won.</td>
+            <td><span class="who">CRM</span></td>
+          </tr>
+          <tr>
+            <td class="item">Bangla replies and quality checks</td>
+            <td>Second-language support was started and paused; automated release checks keep updates safe as usage grows.</td>
+            <td><span class="who">Bot</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>The build after that &mdash; months 4 to 12</h2>
+    <p class="lede">Today the system covers everything up to the moment the customer says yes. The larger half is still to build.</p>
+    <p>Four tracks, each one a real quarter of work. They can run in any order, and the first is the widest gap in the business today.</p>
+
+    <div class="tracks">
+
+      <div class="track">
+        <span class="eyebrow">Track one</span>
+        <h3>After the customer says yes</h3>
+        <p>Right now the job leaves the system the moment it is won. Everything after that still runs on phone calls and spreadsheets.</p>
+        <ul>
+          <li><b>Jobs and scheduling</b> &mdash; site survey, install date, crew and van assigned, all on a calendar tied to the deal.</li>
+          <li><b>An installer app on the phone</b> &mdash; checklist, roof photos, serial numbers and customer sign-off captured on site.</li>
+          <li><b>Rebate paperwork generated</b> &mdash; STC and compliance forms filled from the job record instead of retyped.</li>
+          <li><b>A customer portal</b> &mdash; the buyer logs in to see their quote, contract, install date, documents and warranty in one place.</li>
+        </ul>
+      </div>
+
+      <div class="track">
+        <span class="eyebrow">Track two</span>
+        <h3>Money in, money out</h3>
+        <p>The system knows what you sold. It does not yet know what you made.</p>
+        <ul>
+          <li><b>Contracts with e-signature</b> &mdash; signed from the phone, stored against the deal.</li>
+          <li><b>Deposits, invoices and payment status</b> &mdash; visible on the same board as the sale.</li>
+          <li><b>Finance applications</b> &mdash; green loans started from inside the deal instead of a separate portal.</li>
+          <li><b>Stock and supplier orders</b> &mdash; panels, inverters and batteries: what is on hand, what is committed, what needs ordering.</li>
+          <li><b>Margin per job</b> &mdash; cost of goods and labour against the sale price, so you see profit, not just revenue.</li>
+        </ul>
+      </div>
+
+      <div class="track">
+        <span class="eyebrow">Track three</span>
+        <h3>The intelligence layer</h3>
+        <p>The chatbot proved the engine works. The same engine can be pointed at the rest of the business.</p>
+        <ul>
+          <li><b>AI that drafts the follow-up</b> &mdash; reads the conversation, writes the next email for the rep to approve.</li>
+          <li><b>Calls answered out of hours</b> &mdash; a voice assistant takes the enquiry, logs it as a lead with a transcript.</li>
+          <li><b>Design from a map</b> &mdash; roof layout, shading and yield estimated from the address, producing a priced system in minutes.</li>
+          <li><b>Live system monitoring</b> &mdash; pull performance from installed inverters to trigger service alerts and battery upgrade offers.</li>
+        </ul>
+      </div>
+
+      <div class="track">
+        <span class="eyebrow">Track four</span>
+        <h3>Reach and repeat revenue</h3>
+        <p>The hardest engineering is done once. Extending it is comparatively cheap.</p>
+        <ul>
+          <li><b>More states</b> &mdash; QLD, SA and WA rebate pages from the same generator that made NSW, VIC and ACT.</li>
+          <li><b>A referral engine</b> &mdash; past customers introduce neighbours, tracked and rewarded automatically.</li>
+          <li><b>Maintenance plans</b> &mdash; cleaning, servicing and monitoring sold as a subscription. Recurring revenue from customers you already have.</li>
+          <li><b>A dealer and partner portal</b> &mdash; electricians and resellers submit jobs into your pipeline.</li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <h2>The second revenue line</h2>
+    <p class="lede">The chatbot was built as a platform, not a single bot.</p>
+    <p>One installation can run separate chatbots for many different companies, each with its own documents, branding, phone number and dashboard, fully sealed from the others. That means it can be sold as a monthly service to other businesses without building anything new &mdash; the engineering is done. What remains is pricing, sign-up and billing. This is a decision to make, not a project to start.</p>
+  </section>
+
+  <section>
+    <h2>What we need from you</h2>
+    <div class="decide">
+      <div><b>Email provider</b> &mdash; which service the CRM sends quotes and follow-ups through.</div>
+      <div><b>Business vs. homeowner</b> &mdash; whether commercial customers should be tracked separately from residential ones.</div>
+      <div><b>Which track goes first</b> &mdash; after-sale operations, the money side, the intelligence layer, or reach. Our recommendation is after-sale operations: it is the widest gap and the one costing you time every week.</div>
+      <div><b>Who owns content</b> &mdash; a named person for projects, blogs and news, or the site stays static.</div>
+      <div><b>Chatbot as a product</b> &mdash; whether to sell it to other businesses, and at what price.</div>
+    </div>
+  </section>
+
+  <div class="close">
+    <p>Two months bought the foundation and the sales floor on top of it. The building is not finished &mdash; it is now standing on ground strong enough to add floors to. Everything after the sale, the money side, the intelligence layer and the reach are all still ahead, and each one is cheaper to build than the last because the hard part is already underneath it.</p>
+  </div>
+
+  <footer>
+    <p>PREPARED 12 AUGUST 2026 &middot; KRATOS ENERGY / KRATOS SUSTAINABILITY</p>
+    <p>SOURCES: WEBSITE BUILD REPORT (1 JUN &ndash; 10 AUG, 65 RELEASES) &middot; CRM BUILD REPORT (29 JUN &ndash; 11 AUG, 47 RELEASES) &middot; CHATBOT PLATFORM REPORT (8 JUN &ndash; 30 JUL)</p>
+  </footer>
+
+</div>
+</body>
+</html>
+
